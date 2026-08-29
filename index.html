@@ -17,6 +17,9 @@
     .folder-active:hover {
       background-color: #2563eb;
     }
+    .folder-row:hover .folder-actions {
+      opacity: 1;
+    }
   </style>
 </head>
 <body class="bg-gray-100 font-sans h-screen flex flex-col md:flex-row overflow-hidden">
@@ -35,7 +38,7 @@
 
       <!-- Lista de Pastas e Subpastas -->
       <nav class="space-y-1 overflow-y-auto flex-1 pr-1" id="foldersList">
-        <button onclick="selectFolder('all')" id="folder-all" class="folder-active w-full text-left px-3 py-2 rounded-lg flex items-center justify-between text-sm transition-colors">
+        <button onclick="selectFolder('all')" id="folder-all" class="folder-active w-full text-left px-3 py-2 rounded-lg flex items-center justify-between text-sm transition-colors mb-1">
           <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Todas as Referências</span>
           <span id="count-all" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">0</span>
         </button>
@@ -48,7 +51,7 @@
         <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
         Firebase On
       </span>
-      <span class="text-[10px] text-slate-500">v2.1</span>
+      <span class="text-[10px] text-slate-500">v2.2</span>
     </div>
   </aside>
 
@@ -83,10 +86,11 @@
 
   </main>
 
-  <!-- MODAL: Nova Pasta/Subpasta -->
+  <!-- MODAL: Nova / Editar Pasta -->
   <div id="modalFolder" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl">
-      <h3 class="text-lg font-bold text-gray-800 mb-4">Criar Pasta ou Subpasta</h3>
+      <h3 id="modalFolderTitle" class="text-lg font-bold text-gray-800 mb-4">Criar Pasta ou Subpasta</h3>
+      <input type="hidden" id="editingFolderId" value="">
       
       <div class="space-y-4">
         <div>
@@ -109,7 +113,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Nova Referência -->
+  <!-- MODAL: Nova / Editar Referência -->
   <div id="modalRef" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
       <h3 class="text-lg font-bold text-gray-800 mb-4">Adicionar Referência</h3>
@@ -145,6 +149,17 @@
     </div>
   </div>
 
+  <!-- MODAL: Visualizar Imagem Ampliada (Lightbox) -->
+  <div id="imageViewerModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50 transition-opacity" onclick="closeImageViewer()">
+    <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center" onclick="event.stopPropagation()">
+      <button onclick="closeImageViewer()" class="absolute -top-10 right-0 text-white hover:text-gray-300 text-xl font-bold bg-slate-800/60 rounded-full w-8 h-8 flex items-center justify-center">
+        &times;
+      </button>
+      <img id="imageViewerSrc" src="" alt="Visualização em tamanho real" class="max-w-full max-h-[80vh] rounded-lg shadow-2xl object-contain bg-slate-900">
+      <p id="imageViewerTitle" class="text-white text-center text-sm font-medium mt-3 px-4 py-1 bg-slate-900/80 rounded-full truncate max-w-full"></p>
+    </div>
+  </div>
+
   <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -176,8 +191,10 @@
 
     const modalFolder = document.getElementById('modalFolder');
     const modalRef = document.getElementById('modalRef');
+    const imageViewerModal = document.getElementById('imageViewerModal');
 
-    document.getElementById('btnNewFolder').onclick = () => modalFolder.classList.replace('hidden', 'flex');
+    // Botões dos Modais
+    document.getElementById('btnNewFolder').onclick = () => openFolderModal();
     document.getElementById('btnCloseFolderModal').onclick = () => modalFolder.classList.replace('flex', 'hidden');
     document.getElementById('btnNewRef').onclick = () => modalRef.classList.replace('hidden', 'flex');
     document.getElementById('btnCloseRefModal').onclick = () => modalRef.classList.replace('flex', 'hidden');
@@ -196,23 +213,72 @@
       renderFolders();
     });
 
-    // Salvar Pasta ou Subpasta
+    // Abrir Modal de Pasta (Criar ou Editar)
+    function openFolderModal(folderId = null) {
+      const modalTitle = document.getElementById('modalFolderTitle');
+      const input = document.getElementById('folderNameInput');
+      const editingId = document.getElementById('editingFolderId');
+
+      updateFolderSelects(folderId); // Evita selecionar a própria pasta como pai
+
+      if (folderId) {
+        const folder = folders.find(f => f.id === folderId);
+        if (folder) {
+          modalTitle.innerText = 'Editar Pasta';
+          input.value = folder.name;
+          editingId.value = folder.id;
+          parentFolderSelect.value = folder.parentId || 'root';
+        }
+      } else {
+        modalTitle.innerText = 'Criar Pasta ou Subpasta';
+        input.value = '';
+        editingId.value = '';
+        parentFolderSelect.value = 'root';
+      }
+
+      modalFolder.classList.replace('hidden', 'flex');
+    }
+
+    // Salvar ou Atualizar Pasta
     document.getElementById('btnSaveFolder').onclick = async () => {
       const input = document.getElementById('folderNameInput');
       const parentId = parentFolderSelect.value;
+      const editingId = document.getElementById('editingFolderId').value;
       const name = input.value.trim();
-      
-      if (name) {
+
+      if (!name) return;
+
+      const parentValue = parentId === 'root' ? null : parentId;
+
+      if (editingId) {
+        // Atualizar Pasta Existente
+        await db.collection('folders').doc(editingId).update({
+          name: name,
+          parentId: parentValue
+        });
+      } else {
+        // Criar Nova Pasta
         await db.collection('folders').add({ 
           name, 
-          parentId: parentId === 'root' ? null : parentId,
+          parentId: parentValue,
           createdAt: new Date() 
         });
-        input.value = '';
-        parentFolderSelect.value = 'root';
-        modalFolder.classList.replace('flex', 'hidden');
       }
+
+      input.value = '';
+      document.getElementById('editingFolderId').value = '';
+      modalFolder.classList.replace('flex', 'hidden');
     };
+
+    // Excluir Pasta
+    async function deleteFolder(folderId) {
+      if (confirm('Deseja excluir esta pasta? As referências contidas nela não serão deletadas.')) {
+        await db.collection('folders').doc(folderId).delete();
+        if (currentFolderId === folderId) {
+          selectFolder('all');
+        }
+      }
+    }
 
     // Salvar Referência
     document.getElementById('refForm').onsubmit = async (e) => {
@@ -248,15 +314,26 @@
       renderReferences();
     }
 
-    // Função para obter imagem de visualização / logo da URL
+    // Obter imagem da URL
     function getPreviewImage(url) {
       try {
-        const parsedUrl = new URL(url);
-        // Gerador de captura/thumbnail gratuito utilizando microlink
         return `https://api.microlink.io/?url=${encodeURIComponent(url)}&embed=image.url`;
       } catch (e) {
         return null;
       }
+    }
+
+    // Abrir Modal de Imagem Ampliada
+    function openImageViewer(imgUrl, title) {
+      document.getElementById('imageViewerSrc').src = imgUrl;
+      document.getElementById('imageViewerTitle').innerText = title;
+      imageViewerModal.classList.replace('hidden', 'flex');
+    }
+
+    // Fechar Modal de Imagem Ampliada
+    function closeImageViewer() {
+      imageViewerModal.classList.replace('flex', 'hidden');
+      document.getElementById('imageViewerSrc').src = '';
     }
 
     // Obter todos os IDs de subpastas recursivamente
@@ -269,7 +346,7 @@
       return ids;
     }
 
-    // Renderizar Árvore de Pastas (Pastas e Subpastas)
+    // Renderizar Árvore de Pastas (Com Ações de Editar/Deletar)
     function renderFolders() {
       const allCount = references.length;
       let html = `
@@ -279,7 +356,6 @@
         </button>
       `;
 
-      // Renderizar Pastas Raízes (sem parentId)
       const rootFolders = folders.filter(f => !f.parentId);
 
       function buildFolderTree(folderList, level = 0) {
@@ -290,15 +366,27 @@
           const paddingLeft = level * 16 + 12;
 
           html += `
-            <button onclick="selectFolder('${f.id}')" id="folder-${f.id}" 
-                    style="padding-left: ${paddingLeft}px"
-                    class="${isActive ? 'folder-active' : 'hover:bg-slate-800 text-slate-300'} w-full text-left py-2 pr-3 rounded-lg flex items-center justify-between text-sm transition-colors mb-0.5">
-              <span class="flex items-center gap-2 truncate">
-                <i class="${level > 0 ? 'fa-solid fa-turn-up rotate-90 text-slate-500 text-xs' : 'fa-regular fa-folder'}"></i>
-                <span class="truncate">${f.name}</span>
-              </span>
-              <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full ml-1">${count}</span>
-            </button>
+            <div class="folder-row relative flex items-center group rounded-lg ${isActive ? 'folder-active' : 'hover:bg-slate-800 text-slate-300'}">
+              <button onclick="selectFolder('${f.id}')" id="folder-${f.id}" 
+                      style="padding-left: ${paddingLeft}px"
+                      class="w-full text-left py-2 pr-16 rounded-lg flex items-center justify-between text-sm transition-colors">
+                <span class="flex items-center gap-2 truncate">
+                  <i class="${level > 0 ? 'fa-solid fa-turn-up rotate-90 text-slate-500 text-xs' : 'fa-regular fa-folder'}"></i>
+                  <span class="truncate">${f.name}</span>
+                </span>
+                <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full ml-1">${count}</span>
+              </button>
+
+              <!-- Botões de Ação ao passar o mouse -->
+              <div class="folder-actions opacity-0 group-hover:opacity-100 absolute right-2 flex items-center gap-1.5 transition-opacity bg-slate-900/90 px-1 py-0.5 rounded">
+                <button onclick="event.stopPropagation(); openFolderModal('${f.id}')" title="Editar / Mover Pasta" class="text-slate-400 hover:text-white text-xs p-1">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button onclick="event.stopPropagation(); deleteFolder('${f.id}')" title="Excluir Pasta" class="text-slate-400 hover:text-red-400 text-xs p-1">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
           `;
 
           const children = folders.filter(child => child.parentId === f.id);
@@ -313,21 +401,22 @@
     }
 
     // Atualizar dropdowns de seleção de pastas
-    function updateFolderSelects() {
-      // Para selecionar Pasta Pai no modal de nova pasta
+    function updateFolderSelects(currentEditingId = null) {
       parentFolderSelect.innerHTML = `<option value="root">Nenhuma (Pasta Raiz)</option>`;
-      
-      // Para selecionar Pasta de destino no modal de nova referência
       refFolderSelect.innerHTML = `<option value="all">Geral (Sem pasta)</option>`;
 
       folders.forEach(f => {
+        // Evita que uma pasta seja marcada como pai dela mesma
+        if (f.id !== currentEditingId) {
+          const prefix = f.parentId ? '— ' : '';
+          parentFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
+        }
         const prefix = f.parentId ? '— ' : '';
-        parentFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
         refFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
       });
     }
 
-    // Renderizar Referências com Imagem
+    // Renderizar Referências com Click para Zoom da Imagem
     function renderReferences() {
       const query = searchInput.value.toLowerCase();
       const validFolderIds = currentFolderId === 'all' ? null : getFolderAndSubfolderIds(currentFolderId);
@@ -353,14 +442,18 @@
         return `
           <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between group">
             <div>
-              <!-- Imagem de Pré-visualização -->
-              <div class="h-36 bg-gray-100 relative overflow-hidden border-b border-gray-100">
+              <!-- Imagem Clicável (Abre Lightbox) -->
+              <div class="h-40 bg-gray-100 relative overflow-hidden border-b border-gray-100 cursor-zoom-in" onclick="openImageViewer('${previewImg}', '${r.title.replace(/'/g, "\\'")}')">
                 <img src="${previewImg}" 
                      alt="${r.title}" 
                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                      onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-slate-50 text-slate-300\'><i class=\'fa-regular fa-image text-3xl\'></i></div>';">
                 
-                <button onclick="deleteRef('${r.id}')" class="absolute top-2 right-2 bg-white/90 hover:bg-red-500 hover:text-white text-gray-600 p-1.5 rounded-lg shadow-sm backdrop-blur-sm transition-colors text-xs">
+                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs gap-1 font-medium backdrop-blur-[1px]">
+                  <i class="fa-solid fa-expand"></i> Ampliar
+                </div>
+
+                <button onclick="event.stopPropagation(); deleteRef('${r.id}')" class="absolute top-2 right-2 bg-white/90 hover:bg-red-500 hover:text-white text-gray-600 p-1.5 rounded-lg shadow-sm backdrop-blur-sm transition-colors text-xs z-10">
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </div>
