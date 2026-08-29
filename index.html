@@ -414,12 +414,15 @@
         if (isSignUpMode) {
           const username = authUsername.value.trim() || email.split('@')[0];
           const result = await auth.createUserWithEmailAndPassword(email, password);
-          await result.user.updateProfile({ displayName: username });
+          if (result.user) {
+            await result.user.updateProfile({ displayName: username }).catch(() => {});
+          }
         } else {
           await auth.signInWithEmailAndPassword(email, password);
         }
       } catch (err) {
-        authError.innerText = translateAuthError(err.code);
+        console.error("Erro Firebase Auth:", err);
+        authError.innerText = translateAuthError(err);
         authError.classList.remove('hidden');
       }
     };
@@ -430,7 +433,8 @@
       try {
         await auth.signInWithPopup(provider);
       } catch (err) {
-        authError.innerText = translateAuthError(err.code);
+        console.error("Erro Firebase Google:", err);
+        authError.innerText = translateAuthError(err);
         authError.classList.remove('hidden');
       }
     };
@@ -459,14 +463,17 @@
       }
     });
 
-    function translateAuthError(code) {
+    function translateAuthError(err) {
+      const code = err.code || err;
       switch (code) {
         case 'auth/invalid-email': return 'E-mail inválido.';
         case 'auth/user-not-found': return 'Usuário não encontrado.';
         case 'auth/wrong-password': return 'Senha incorreta.';
-        case 'auth/email-already-in-use': return 'Este e-mail já está em uso.';
+        case 'auth/email-already-in-use': return 'Este e-mail já está cadastrado. Clique em "Fazer Login".';
         case 'auth/weak-password': return 'A senha deve ter pelo menos 6 caracteres.';
-        default: return 'Erro ao autenticar. Tente novamente.';
+        case 'auth/network-request-failed': return 'Erro de conexão com a rede.';
+        case 'auth/popup-closed-by-user': return 'A janela de login do Google foi fechada.';
+        default: return err.message || 'Erro ao autenticar. Tente novamente.';
       }
     }
 
