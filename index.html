@@ -3,577 +3,313 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RefHub - Referências para Desenho</title>
-  <link rel="manifest" href="manifest.json">
-  <!-- Tailwind CSS -->
+  <title>RefHub - Gerenciador de Referências</title>
+  
+  <!-- FontAwesome & Tailwind CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+  
   <style>
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #1f2937; }
-    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+    .folder-active {
+      background-color: #3b82f6;
+      color: white;
+    }
+    .folder-active:hover {
+      background-color: #2563eb;
+    }
   </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen font-sans flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+<body class="bg-gray-100 font-sans h-screen flex flex-col md:flex-row overflow-hidden">
 
-  <!-- Header / Navbar -->
-  <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-30 px-4 py-3 shadow-md">
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-      <!-- Logo & Title -->
-      <div class="flex items-center gap-3 w-full md:w-auto justify-between">
-        <div class="flex items-center gap-2">
-          <div class="p-2 bg-indigo-600 rounded-lg text-white">
-            <i data-lucide="palette" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <h1 class="font-bold text-lg leading-tight tracking-wide text-indigo-400">RefHub</h1>
-            <p class="text-xs text-gray-400">Organizador de Referências</p>
-          </div>
-        </div>
-        <div id="syncStatus" class="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-1 rounded-full">
-          <i data-lucide="cloud-check" class="w-3.5 h-3.5"></i>
-          <span>Pronto</span>
-        </div>
-      </div>
-
-      <!-- Search Bar -->
-      <div class="relative w-full md:w-96">
-        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        <input type="text" id="searchInput" placeholder="Buscar por título ou #tag..." 
-          class="w-full bg-gray-800 border border-gray-700 text-sm rounded-lg pl-9 pr-8 py-2 text-gray-200 placeholder-gray-400 focus:outline-none focus:border-indigo-500 transition-all">
-        <button id="clearSearch" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
-          <i data-lucide="x" class="w-4 h-4"></i>
+  <!-- Sidebar (Menu Lateral) -->
+  <aside class="w-full md:w-64 bg-slate-900 text-white flex flex-col justify-between shrink-0 h-auto md:h-full">
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-bold tracking-wide flex items-center gap-2">
+          <i class="fa-solid fa-bookmark text-blue-500"></i> RefHub
+        </h1>
+        <button id="btnNewFolder" class="bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 px-2 rounded flex items-center gap-1">
+          <i class="fa-solid fa-folder-plus"></i> Nova
         </button>
       </div>
 
-      <!-- Actions Header -->
-      <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-        <button id="btnNewFolder" class="flex items-center gap-1.5 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-sm font-medium rounded-lg border border-gray-700 transition-colors">
-          <i data-lucide="folder-plus" class="w-4 h-4 text-indigo-400"></i>
-          <span class="hidden sm:inline">Nova Pasta</span>
+      <!-- Lista de Pastas -->
+      <nav class="space-y-1 overflow-y-auto max-h-[40vh] md:max-h-[calc(100vh-160px)]" id="foldersList">
+        <button onclick="selectFolder('all')" id="folder-all" class="folder-active w-full text-left px-3 py-2 rounded flex items-center justify-between text-sm transition-colors">
+          <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Todas as Referências</span>
+          <span id="count-all" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">0</span>
         </button>
-        <button id="btnNewRef" class="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-indigo-600/20">
-          <i data-lucide="image-plus" class="w-4 h-4"></i>
-          <span>Nova Referência</span>
-        </button>
-      </div>
+      </nav>
     </div>
-  </header>
 
-  <!-- Main Workspace -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-6">
-    <nav aria-label="Navegação de Pastas" class="flex items-center flex-wrap gap-1.5 text-sm bg-gray-900/50 p-2.5 rounded-lg border border-gray-800/80">
-      <div id="breadcrumb" class="flex items-center flex-wrap gap-1 text-gray-300"></div>
-    </nav>
+    <!-- Status de Sincronização -->
+    <div class="p-4 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+      <span class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+        Firebase On
+      </span>
+      <span class="text-[10px] text-slate-500">v2.0</span>
+    </div>
+  </aside>
 
-    <section>
-      <div id="foldersContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6"></div>
-
-      <div id="referencesHeader" class="flex items-center justify-between mb-3 border-b border-gray-800 pb-2">
-        <h2 id="sectionTitle" class="text-sm font-semibold text-gray-400 tracking-wider uppercase flex items-center gap-2">
-          <i data-lucide="images" class="w-4 h-4"></i> Referências
-        </h2>
-        <span id="itemCount" class="text-xs text-gray-500 font-mono">0 itens</span>
+  <!-- Conteúdo Principal -->
+  <main class="flex-1 flex flex-col h-full overflow-hidden">
+    
+    <!-- Header/Busca -->
+    <header class="bg-white border-b border-gray-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="relative w-full sm:w-80">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        <input type="text" id="searchInput" placeholder="Pesquisar referências..." class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
       </div>
 
-      <div id="referencesGrid" class="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4"></div>
+      <button id="btnNewRef" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors">
+        <i class="fa-solid fa-plus"></i> Nova Referência
+      </button>
+    </header>
 
-      <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-center text-gray-500 border-2 border-dashed border-gray-800 rounded-xl">
-        <i data-lucide="folder-open" class="w-12 h-12 mb-3 text-gray-600"></i>
-        <p class="text-base font-medium text-gray-400">Esta pasta está vazia</p>
-        <p class="text-xs text-gray-500 mt-1 max-w-xs">Adicione subpastas ou novas imagens de referência para organizar seu estúdio.</p>
+    <!-- Área de Conteúdo (Cards/Tabela) -->
+    <section class="flex-1 overflow-y-auto p-4 md:p-6" id="mainContent">
+      <div id="referencesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Renderizado dinamicamente pelo JS -->
+      </div>
+      
+      <!-- State vazio -->
+      <div id="emptyState" class="hidden text-center py-16">
+        <i class="fa-regular fa-folder-open text-5xl text-gray-300 mb-3"></i>
+        <p class="text-gray-500 font-medium">Nenhuma referência encontrada aqui.</p>
+        <p class="text-xs text-gray-400 mt-1">Clique em "Nova Referência" para adicionar uma.</p>
       </div>
     </section>
+
   </main>
 
   <!-- MODAL: Nova Pasta -->
-  <div id="modalFolder" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-gray-900 border border-gray-800 rounded-xl max-w-md w-full p-6 shadow-2xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
-          <i data-lucide="folder-plus" class="w-5 h-5 text-indigo-400"></i> Criar Nova Pasta
-        </h3>
-        <button class="closeModal text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+  <div id="modalFolder" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-lg max-w-sm w-full p-6 shadow-xl">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Criar Nova Pasta</h3>
+      <input type="text" id="folderNameInput" placeholder="Nome da pasta..." class="w-full border border-gray-300 rounded-lg p-2 text-sm mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+      <div class="flex justify-end gap-2">
+        <button id="btnCloseFolderModal" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+        <button id="btnSaveFolder" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">Salvar</button>
       </div>
-      <form id="formFolder" class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-gray-400 mb-1">Nome da Pasta</label>
-          <input type="text" id="folderName" required placeholder="Ex: Anatomia, Cenários, Pose Dinâmica" 
-            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
-        </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" class="closeModal px-4 py-2 text-sm bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-300">Cancelar</button>
-          <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white font-medium">Criar Pasta</button>
-        </div>
-      </form>
     </div>
   </div>
 
   <!-- MODAL: Nova Referência -->
-  <div id="modalRef" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-gray-900 border border-gray-800 rounded-xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
-          <i data-lucide="image-plus" class="w-5 h-5 text-indigo-400"></i> Adicionar Referência
-        </h3>
-        <button class="closeModal text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
+  <div id="modalRef" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Adicionar Referência</h3>
       
-      <div class="flex bg-gray-800 p-1 rounded-lg mb-4 text-xs font-medium">
-        <button id="tabUrl" type="button" class="flex-1 py-1.5 rounded-md bg-indigo-600 text-white transition-all">Link (URL)</button>
-        <button id="tabFile" type="button" class="flex-1 py-1.5 rounded-md text-gray-400 hover:text-white transition-all">Upload Local</button>
-      </div>
-
-      <form id="formRef" class="space-y-4">
-        <div id="groupUrl">
-          <label class="block text-xs font-medium text-gray-400 mb-1">URL da Imagem</label>
-          <input type="url" id="refUrl" placeholder="https://exemplo.com/imagem.png" 
-            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
-        </div>
-
-        <div id="groupFile" class="hidden">
-          <label class="block text-xs font-medium text-gray-400 mb-1">Selecione o Arquivo</label>
-          <input type="file" id="refFile" accept="image/*" 
-            class="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-800 file:text-indigo-400 hover:file:bg-gray-700 cursor-pointer">
+      <form id="refForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Título</label>
+          <input type="text" id="refTitle" required placeholder="Ex: Artigo sobre UI/UX" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-gray-400 mb-1">Título</label>
-          <input type="text" id="refTitle" required placeholder="Ex: Mão segurando espada" 
-            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Link (URL)</label>
+          <input type="url" id="refUrl" required placeholder="https://..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-gray-400 mb-1">Tags (separadas por vírgula)</label>
-          <input type="text" id="refTags" placeholder="mão, perspectiva, armadura, luz" 
-            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Pasta</label>
+          <select id="refFolderSelect" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <!-- Opções populadas dinamicamente -->
+          </select>
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-gray-400 mb-1">Link de Origem / Créditos (Opcional)</label>
-          <input type="url" id="refSource" placeholder="https://pinterest.com/pin/123..." 
-            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Anotações / Descrição</label>
+          <textarea id="refNotes" rows="3" placeholder="Resumo, observações..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" class="closeModal px-4 py-2 text-sm bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-300">Cancelar</button>
-          <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white font-medium">Salvar Referência</button>
+          <button type="button" id="btnCloseRefModal" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">Salvar Referência</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: Lightbox -->
-  <div id="modalLightbox" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex flex-col p-4">
-    <div class="flex justify-between items-center p-2 text-gray-400">
-      <h3 id="viewTitle" class="text-base font-semibold text-white"></h3>
-      <div class="flex items-center gap-3">
-        <a id="viewSource" href="#" target="_blank" class="hidden text-indigo-400 hover:underline text-xs flex items-center gap-1">
-          <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Fonte Original
-        </a>
-        <button id="btnDeleteRef" class="text-red-400 hover:text-red-300 text-xs flex items-center gap-1 bg-red-950/40 border border-red-900/50 px-2.5 py-1 rounded">
-          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Excluir
-        </button>
-        <button class="closeModal text-gray-400 hover:text-white p-1"><i data-lucide="x" class="w-6 h-6"></i></button>
-      </div>
-    </div>
-    
-    <div class="flex-1 flex items-center justify-center overflow-hidden my-2">
-      <img id="viewImage" src="" alt="" class="max-h-full max-w-full object-contain rounded-lg shadow-2xl">
-    </div>
-
-    <div class="p-2 flex justify-center flex-wrap gap-1.5" id="viewTags"></div>
-  </div>
+  <!-- Firebase Scripts (v9+ Compatibility) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // Register Service Worker for PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW reg error: ', err));
-      });
-    }
+    // Suas configurações reais do Firebase já inseridas aqui:
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0TXsAPXMmt_5QI8UPY028zjXy9dYQxAQ",
+      authDomain: "refhub-studio.firebaseapp.com",
+      projectId: "refhub-studio",
+      storageBucket: "refhub-studio.firebasestorage.app",
+      messagingSenderId: "334625263765",
+      appId: "1:334625263765:web:ec9ee61d266db34eb10b9c"
+    };
 
-    const firebaseConfig = typeof __firebase_config !== 'undefined' 
-      ? JSON.parse(__firebase_config) 
-      : { apiKey: "demo", authDomain: "demo.firebaseapp.com", projectId: "demo" };
-
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'refhub-app';
 
-    let currentFolderId = 'root';
-    let folderPath = [{ id: 'root', name: 'Início' }];
+    // Estado da Aplicação
     let folders = [];
     let references = [];
-    let currentUser = null;
-    let uploadType = 'url';
-    let activeRefId = null;
+    let currentFolderId = 'all';
 
-    const breadcrumbEl = document.getElementById('breadcrumb');
-    const foldersContainer = document.getElementById('foldersContainer');
+    // Elementos do DOM
+    const foldersList = document.getElementById('foldersList');
     const referencesGrid = document.getElementById('referencesGrid');
     const emptyState = document.getElementById('emptyState');
+    const refFolderSelect = document.getElementById('refFolderSelect');
     const searchInput = document.getElementById('searchInput');
-    const clearSearch = document.getElementById('clearSearch');
-    const itemCount = document.getElementById('itemCount');
-    const syncStatus = document.getElementById('syncStatus');
 
+    // Modais
     const modalFolder = document.getElementById('modalFolder');
     const modalRef = document.getElementById('modalRef');
-    const modalLightbox = document.getElementById('modalLightbox');
 
-    const formFolder = document.getElementById('formFolder');
-    const formRef = document.getElementById('formRef');
+    // Botões dos Modais
+    document.getElementById('btnNewFolder').onclick = () => modalFolder.classList.replace('hidden', 'flex');
+    document.getElementById('btnCloseFolderModal').onclick = () => modalFolder.classList.replace('flex', 'hidden');
+    document.getElementById('btnNewRef').onclick = () => modalRef.classList.replace('hidden', 'flex');
+    document.getElementById('btnCloseRefModal').onclick = () => modalRef.classList.replace('flex', 'hidden');
 
-    async function initApp() {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await auth.signInWithCustomToken(__initial_auth_token);
-        } else {
-          await auth.signInAnonymously();
-        }
-      } catch (e) {
-        console.warn("Auth fallback:", e);
+    // Escutar Mudanças nas Pastas no Firestore
+    db.collection('folders').onSnapshot(snapshot => {
+      folders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderFolders();
+      updateSelectFolders();
+    });
+
+    // Escutar Mudanças nas Referências no Firestore
+    db.collection('references').onSnapshot(snapshot => {
+      references = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderReferences();
+    });
+
+    // Salvar Pasta
+    document.getElementById('btnSaveFolder').onclick = async () => {
+      const input = document.getElementById('folderNameInput');
+      const name = input.value.trim();
+      if (name) {
+        await db.collection('folders').add({ name, createdAt: new Date() });
+        input.value = '';
+        modalFolder.classList.replace('flex', 'hidden');
       }
+    };
 
-      auth.onAuthStateChanged((user) => {
-        currentUser = user;
-        updateSyncBadge(true);
-        loadData();
+    // Salvar Referência
+    document.getElementById('refForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('refTitle').value;
+      const url = document.getElementById('refUrl').value;
+      const folderId = refFolderSelect.value;
+      const notes = document.getElementById('refNotes').value;
+
+      await db.collection('references').add({
+        title,
+        url,
+        folderId,
+        notes,
+        createdAt: new Date()
+      });
+
+      e.target.reset();
+      modalRef.classList.replace('flex', 'hidden');
+    };
+
+    // Deletar Referência
+    async function deleteRef(id) {
+      if (confirm('Deseja realmente excluir esta referência?')) {
+        await db.collection('references').doc(id).delete();
+      }
+    }
+
+    // Selecionar Pasta Ativa
+    function selectFolder(id) {
+      currentFolderId = id;
+      document.querySelectorAll('#foldersList button').forEach(btn => {
+        btn.classList.remove('folder-active');
+        btn.classList.add('hover:bg-slate-800', 'text-slate-300');
       });
       
-      lucide.createIcons();
-    }
-
-    function updateSyncBadge(isSynced) {
-      if(isSynced) {
-        syncStatus.innerHTML = `<i data-lucide="cloud-check" class="w-3.5 h-3.5"></i><span>Pronto</span>`;
-        syncStatus.className = "flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-1 rounded-full";
-      } else {
-        syncStatus.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 animate-spin"></i><span>Salvando...</span>`;
-        syncStatus.className = "flex items-center gap-1.5 text-xs text-amber-400 bg-amber-950/60 border border-amber-800/50 px-2.5 py-1 rounded-full";
+      const activeBtn = document.getElementById(`folder-${id}`);
+      if (activeBtn) {
+        activeBtn.classList.add('folder-active');
+        activeBtn.classList.remove('hover:bg-slate-800', 'text-slate-300');
       }
-      lucide.createIcons();
+      renderReferences();
     }
 
-    function loadData() {
-      if (!currentUser) return;
+    // Renderizar Lista de Pastas
+    function renderFolders() {
+      // Manter a pasta "Todas"
+      const allCount = references.length;
+      foldersList.innerHTML = `
+        <button onclick="selectFolder('all')" id="folder-all" class="${currentFolderId === 'all' ? 'folder-active' : 'hover:bg-slate-800 text-slate-300'} w-full text-left px-3 py-2 rounded flex items-center justify-between text-sm transition-colors">
+          <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Todas as Referências</span>
+          <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">${allCount}</span>
+        </button>
+      `;
 
-      const foldersCol = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('folders');
-      const refsCol = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('references');
-
-      foldersCol.onSnapshot((snapshot) => {
-        folders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        render();
-      }, (err) => console.error(err));
-
-      refsCol.onSnapshot((snapshot) => {
-        references = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        render();
-      }, (err) => console.error(err));
+      folders.forEach(f => {
+        const count = references.filter(r => r.folderId === f.id).length;
+        const isActive = currentFolderId === f.id;
+        foldersList.innerHTML += `
+          <button onclick="selectFolder('${f.id}')" id="folder-${f.id}" class="${isActive ? 'folder-active' : 'hover:bg-slate-800 text-slate-300'} w-full text-left px-3 py-2 rounded flex items-center justify-between text-sm transition-colors">
+            <span class="flex items-center gap-2 truncate"><i class="fa-regular fa-folder"></i> ${f.name}</span>
+            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">${count}</span>
+          </button>
+        `;
+      });
     }
 
-    function render() {
-      const query = searchInput.value.toLowerCase().trim();
-      renderBreadcrumb();
+    // Atualizar opções de pastas no formulário
+    function updateSelectFolders() {
+      refFolderSelect.innerHTML = `<option value="all">Geral (Sem pasta)</option>`;
+      folders.forEach(f => {
+        refFolderSelect.innerHTML += `<option value="${f.id}">${f.name}</option>`;
+      });
+    }
 
-      if (query !== '') {
-        renderSearchResults(query);
+    // Renderizar Referências
+    function renderReferences() {
+      const query = searchInput.value.toLowerCase();
+      
+      let filtered = references.filter(r => {
+        const matchesFolder = currentFolderId === 'all' || r.folderId === currentFolderId;
+        const matchesSearch = r.title.toLowerCase().includes(query) || (r.notes && r.notes.toLowerCase().includes(query));
+        return matchesFolder && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        referencesGrid.innerHTML = '';
+        emptyState.classList.remove('hidden');
         return;
       }
 
-      const currentFolders = folders.filter(f => f.parentId === currentFolderId);
-      const currentRefs = references.filter(r => r.folderId === currentFolderId);
-
-      foldersContainer.innerHTML = '';
-      currentFolders.forEach(folder => {
-        const fEl = document.createElement('div');
-        fEl.className = 'group flex items-center justify-between p-3 bg-gray-900 border border-gray-800 rounded-xl hover:border-indigo-600/50 hover:bg-gray-850 cursor-pointer transition-all';
-        fEl.innerHTML = `
-          <div class="flex items-center gap-2.5 min-w-0" onclick="navigateToFolder('${folder.id}', '${escapeQuotes(folder.name)}')">
-            <i data-lucide="folder" class="w-5 h-5 text-indigo-400 shrink-0 group-hover:fill-indigo-400/20"></i>
-            <span class="text-sm font-medium text-gray-200 truncate">${folder.name}</span>
+      emptyState.classList.add('hidden');
+      referencesGrid.innerHTML = filtered.map(r => `
+        <div class="bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h4 class="font-semibold text-gray-800 text-base leading-snug line-clamp-2">${r.title}</h4>
+              <button onclick="deleteRef('${r.id}')" class="text-gray-400 hover:text-red-500 text-xs p-1">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+            ${r.notes ? `<p class="text-xs text-gray-500 mb-3 line-clamp-3">${r.notes}</p>` : ''}
           </div>
-          <button onclick="deleteFolder(event, '${folder.id}')" class="opacity-0 group-hover:opacity-100 p-1 text-gray-500 hover:text-red-400 transition-opacity">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-          </button>
-        `;
-        foldersContainer.appendChild(fEl);
-      });
-
-      referencesGrid.innerHTML = '';
-      currentRefs.forEach(ref => {
-        const rEl = createReferenceCard(ref);
-        referencesGrid.appendChild(rEl);
-      });
-
-      const totalItems = currentFolders.length + currentRefs.length;
-      itemCount.innerText = `${totalItems} item(ns)`;
-
-      if (totalItems === 0) {
-        emptyState.classList.remove('hidden');
-      } else {
-        emptyState.classList.add('hidden');
-      }
-
-      lucide.createIcons();
-    }
-
-    function createReferenceCard(ref) {
-      const card = document.createElement('div');
-      card.className = 'break-inside-avoid mb-4 group relative bg-gray-900 border border-gray-800 rounded-xl overflow-hidden hover:border-gray-700 transition-all shadow-md';
-      
-      const tagsHtml = (ref.tags || []).map(t => `<span class="bg-indigo-950/80 border border-indigo-800/40 text-indigo-300 text-[10px] px-1.5 py-0.5 rounded">#${t}</span>`).join(' ');
-
-      card.innerHTML = `
-        <div class="relative overflow-hidden cursor-pointer bg-gray-950" onclick="openLightbox('${ref.id}')">
-          <img src="${ref.url}" alt="${ref.title}" loading="lazy" class="w-full object-cover group-hover:scale-105 transition-transform duration-300 max-h-96" onerror="this.src='https://placehold.co/400x300/1e293b/94a3b8?text=Imagem+Indispon%C3%ADvel'">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-            <p class="text-xs text-white font-medium truncate">${ref.title}</p>
+          
+          <div class="pt-3 border-t border-gray-100 flex items-center justify-between text-xs mt-2">
+            <a href="${r.url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline flex items-center gap-1 font-medium">
+              Acessar Link <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            </a>
           </div>
         </div>
-        <div class="p-2.5 flex flex-col gap-1.5">
-          <h3 class="text-xs font-semibold text-gray-200 truncate">${ref.title}</h3>
-          ${tagsHtml ? `<div class="flex flex-wrap gap-1">${tagsHtml}</div>` : ''}
-        </div>
-      `;
-      return card;
-    }
-
-    function renderSearchResults(query) {
-      foldersContainer.innerHTML = '';
-      referencesGrid.innerHTML = '';
-
-      const matchedRefs = references.filter(r => 
-        r.title.toLowerCase().includes(query) || 
-        (r.tags && r.tags.some(t => t.toLowerCase().includes(query)))
-      );
-
-      matchedRefs.forEach(ref => {
-        const card = createReferenceCard(ref);
-        referencesGrid.appendChild(card);
-      });
-
-      itemCount.innerText = `${matchedRefs.length} resultado(s)`;
-      if (matchedRefs.length === 0) {
-        emptyState.classList.remove('hidden');
-      } else {
-        emptyState.classList.add('hidden');
-      }
-      lucide.createIcons();
-    }
-
-    function renderBreadcrumb() {
-      breadcrumbEl.innerHTML = '';
-      folderPath.forEach((item, index) => {
-        const isLast = index === folderPath.length - 1;
-        
-        const btn = document.createElement('button');
-        btn.className = `flex items-center gap-1 hover:text-indigo-400 transition-colors ${isLast ? 'font-semibold text-white' : 'text-gray-400'}`;
-        btn.innerHTML = index === 0 ? `<i data-lucide="home" class="w-4 h-4"></i> ${item.name}` : item.name;
-        btn.onclick = () => jumpToBreadcrumb(index);
-
-        breadcrumbEl.appendChild(btn);
-
-        if (!isLast) {
-          const sep = document.createElement('span');
-          sep.className = 'text-gray-600';
-          sep.innerHTML = '<i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>';
-          breadcrumbEl.appendChild(sep);
-        }
-      });
-      lucide.createIcons();
-    }
-
-    function navigateToFolder(id, name) {
-      currentFolderId = id;
-      folderPath.push({ id, name });
-      render();
-    }
-
-    function jumpToBreadcrumb(index) {
-      folderPath = folderPath.slice(0, index + 1);
-      currentFolderId = folderPath[folderPath.length - 1].id;
-      render();
-    }
-
-    formFolder.onsubmit = async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('folderName').value.trim();
-      if (!name || !currentUser) return;
-
-      updateSyncBadge(false);
-      try {
-        await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('folders').add({
-          name,
-          parentId: currentFolderId,
-          createdAt: new Date().toISOString()
-        });
-        modalFolder.classList.add('hidden');
-        formFolder.reset();
-        updateSyncBadge(true);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    formRef.onsubmit = async (e) => {
-      e.preventDefault();
-      const title = document.getElementById('refTitle').value.trim();
-      const tagsRaw = document.getElementById('refTags').value;
-      const source = document.getElementById('refSource').value.trim();
-      
-      const tags = tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0);
-      let imgUrl = '';
-
-      if (uploadType === 'url') {
-        imgUrl = document.getElementById('refUrl').value.trim();
-      } else {
-        const fileInput = document.getElementById('refFile');
-        if (fileInput.files && fileInput.files[0]) {
-          imgUrl = await convertFileToBase64(fileInput.files[0]);
-        }
-      }
-
-      if (!imgUrl || !title || !currentUser) return;
-
-      updateSyncBadge(false);
-      try {
-        await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('references').add({
-          title,
-          url: imgUrl,
-          tags,
-          sourceUrl: source || null,
-          folderId: currentFolderId,
-          createdAt: new Date().toISOString()
-        });
-        modalRef.classList.add('hidden');
-        formRef.reset();
-        updateSyncBadge(true);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    async function deleteFolder(e, folderId) {
-      e.stopPropagation();
-      if (!confirm("Excluir esta pasta e seu conteúdo?")) return;
-
-      updateSyncBadge(false);
-      try {
-        await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('folders').doc(folderId).delete();
-        updateSyncBadge(true);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    function openLightbox(refId) {
-      const ref = references.find(r => r.id === refId);
-      if (!ref) return;
-
-      activeRefId = refId;
-      document.getElementById('viewTitle').innerText = ref.title;
-      document.getElementById('viewImage').src = ref.url;
-      
-      const viewSource = document.getElementById('viewSource');
-      if (ref.sourceUrl) {
-        viewSource.href = ref.sourceUrl;
-        viewSource.classList.remove('hidden');
-      } else {
-        viewSource.classList.add('hidden');
-      }
-
-      const tagsContainer = document.getElementById('viewTags');
-      tagsContainer.innerHTML = (ref.tags || []).map(t => `
-        <span class="bg-indigo-900/50 border border-indigo-700/50 text-indigo-300 text-xs px-2 py-1 rounded-full">#${t}</span>
       `).join('');
-
-      modalLightbox.classList.remove('hidden');
     }
 
-    document.getElementById('btnDeleteRef').onclick = async () => {
-      if (!activeRefId || !currentUser) return;
-      if (!confirm("Excluir esta referência?")) return;
-
-      updateSyncBadge(false);
-      try {
-        await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('references').doc(activeRefId).delete();
-        modalLightbox.classList.add('hidden');
-        updateSyncBadge(true);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    function convertFileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-      });
-    }
-
-    function escapeQuotes(str) {
-      return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
-    }
-
-    document.getElementById('btnNewFolder').onclick = () => modalFolder.classList.remove('hidden');
-    document.getElementById('btnNewRef').onclick = () => modalRef.classList.remove('hidden');
-
-    document.querySelectorAll('.closeModal').forEach(btn => {
-      btn.onclick = () => {
-        modalFolder.classList.add('hidden');
-        modalRef.classList.add('hidden');
-        modalLightbox.classList.add('hidden');
-      };
-    });
-
-    const tabUrl = document.getElementById('tabUrl');
-    const tabFile = document.getElementById('tabFile');
-    const groupUrl = document.getElementById('groupUrl');
-    const groupFile = document.getElementById('groupFile');
-
-    tabUrl.onclick = () => {
-      uploadType = 'url';
-      tabUrl.className = "flex-1 py-1.5 rounded-md bg-indigo-600 text-white transition-all";
-      tabFile.className = "flex-1 py-1.5 rounded-md text-gray-400 hover:text-white transition-all";
-      groupUrl.classList.remove('hidden');
-      groupFile.classList.add('hidden');
-    };
-
-    tabFile.onclick = () => {
-      uploadType = 'file';
-      tabFile.className = "flex-1 py-1.5 rounded-md bg-indigo-600 text-white transition-all";
-      tabUrl.className = "flex-1 py-1.5 rounded-md text-gray-400 hover:text-white transition-all";
-      groupFile.classList.remove('hidden');
-      groupUrl.classList.add('hidden');
-    };
-
-    searchInput.oninput = (e) => {
-      if (e.target.value) {
-        clearSearch.classList.remove('hidden');
-      } else {
-        clearSearch.classList.add('hidden');
-      }
-      render();
-    };
-
-    clearSearch.onclick = () => {
-      searchInput.value = '';
-      clearSearch.classList.add('hidden');
-      render();
-    };
-
-    window.onload = initApp;
+    // Busca em Tempo Real
+    searchInput.addEventListener('input', renderReferences);
   </script>
 </body>
 </html>
