@@ -10,7 +10,10 @@
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/566/566737.png">
+  
+  <!-- ÍCONE DO APP (Você pode trocar o link abaixo pela URL da imagem/ícone que desejar) -->
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3176/3176396.png">
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3176/3176396.png">
   
   <!-- FontAwesome & Tailwind CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -26,6 +29,10 @@
     }
     .folder-row:hover .folder-actions {
       opacity: 1;
+    }
+    .tag-active {
+      background-color: #3b82f6 !important;
+      color: white !important;
     }
   </style>
 
@@ -74,8 +81,6 @@
 
       <!-- Formulário E-mail/Senha -->
       <form id="authForm" class="space-y-3">
-        
-        <!-- Campo Username (Apenas visível no cadastro) -->
         <div id="usernameField" class="hidden">
           <label class="block text-xs font-semibold text-gray-600 mb-1">Nome de Usuário (Username)</label>
           <div class="relative">
@@ -137,7 +142,7 @@
         </button>
       </div>
 
-      <div class="flex items-center justify-between mb-4 shrink-0">
+      <div class="flex items-center justify-between mb-3 shrink-0">
         <h1 class="text-lg font-bold tracking-wide flex items-center gap-2">
           <i class="fa-solid fa-bookmark text-blue-500"></i> RefHub
         </h1>
@@ -146,13 +151,32 @@
         </button>
       </div>
 
-      <!-- Lista de Pastas e Subpastas -->
-      <nav class="space-y-1 overflow-y-auto flex-1 pr-1" id="foldersList">
-        <button onclick="selectFolder('all')" id="folder-all" class="folder-active w-full text-left px-3 py-2 rounded-lg flex items-center justify-between text-sm transition-colors mb-1">
-          <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Todas as Referências</span>
-          <span id="count-all" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">0</span>
-        </button>
-      </nav>
+      <!-- Conteúdo com Scroll da Sidebar (Pastas e Tags) -->
+      <div class="overflow-y-auto flex-1 pr-1 space-y-5">
+        
+        <!-- Lista de Pastas e Subpastas -->
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 px-1">Pastas</p>
+          <nav class="space-y-1" id="foldersList">
+            <button onclick="selectFolder('all')" id="folder-all" class="folder-active w-full text-left px-3 py-2 rounded-lg flex items-center justify-between text-sm transition-colors mb-1">
+              <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Todas as Referências</span>
+              <span id="count-all" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">0</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Seção de Tags na Sidebar -->
+        <div class="pt-2 border-t border-slate-800">
+          <div class="flex items-center justify-between mb-2 px-1">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tags Populares</p>
+            <button id="btnClearTagFilter" onclick="filterByTag(null)" class="hidden text-[10px] text-blue-400 hover:underline">Limpar filtro</button>
+          </div>
+          <div id="tagsListSidebar" class="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
+            <span class="text-xs text-slate-500 italic">Nenhuma tag cadastrada</span>
+          </div>
+        </div>
+
+      </div>
     </div>
 
     <!-- Status de Sincronização -->
@@ -161,7 +185,7 @@
         <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
         Firebase On
       </span>
-      <span class="text-[10px] text-slate-500">v4.0 (Auth)</span>
+      <span class="text-[10px] text-slate-500">v4.1</span>
     </div>
   </aside>
 
@@ -303,14 +327,19 @@
     </div>
   </div>
 
-  <!-- MODAL: Lightbox Imagem Ampliada -->
-  <div id="imageViewerModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50 transition-opacity" onclick="closeImageViewer()">
-    <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center" onclick="event.stopPropagation()">
-      <button onclick="closeImageViewer()" class="absolute -top-10 right-0 text-white hover:text-gray-300 text-xl font-bold bg-slate-800/60 rounded-full w-8 h-8 flex items-center justify-center">
+  <!-- MODAL: Lightbox Imagem Ampliada em Alta Resolução -->
+  <div id="imageViewerModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center p-4 z-50 transition-opacity" onclick="closeImageViewer()">
+    <div class="relative max-w-5xl max-h-[95vh] flex flex-col items-center" onclick="event.stopPropagation()">
+      <button onclick="closeImageViewer()" class="absolute -top-10 right-0 text-white hover:text-gray-300 text-xl font-bold bg-slate-800/80 rounded-full w-8 h-8 flex items-center justify-center">
         &times;
       </button>
-      <img id="imageViewerSrc" src="" alt="Visualização em tamanho real" class="max-w-full max-h-[80vh] rounded-lg shadow-2xl object-contain bg-slate-900">
-      <p id="imageViewerTitle" class="text-white text-center text-sm font-medium mt-3 px-4 py-1 bg-slate-900/80 rounded-full truncate max-w-full"></p>
+      <img id="imageViewerSrc" src="" alt="Visualização em tamanho real" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain bg-slate-900">
+      <div class="flex items-center justify-between w-full mt-3 px-2">
+        <p id="imageViewerTitle" class="text-white text-sm font-medium truncate max-w-md"></p>
+        <a id="imageViewerDownload" href="" target="_blank" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Imagem Original
+        </a>
+      </div>
     </div>
   </div>
 
@@ -338,6 +367,7 @@
     let folders = [];
     let references = [];
     let currentFolderId = 'all';
+    let selectedTagFilter = null;
     let unsubscribeFolders = null;
     let unsubscribeReferences = null;
 
@@ -362,6 +392,9 @@
     const userAvatar = document.getElementById('userAvatar');
 
     const foldersList = document.getElementById('foldersList');
+    const tagsListSidebar = document.getElementById('tagsListSidebar');
+    const btnClearTagFilter = document.getElementById('btnClearTagFilter');
+
     const referencesGrid = document.getElementById('referencesGrid');
     const emptyState = document.getElementById('emptyState');
     const refFolderSelect = document.getElementById('refFolderSelect');
@@ -448,13 +481,11 @@
         currentUser = user;
         authScreen.classList.add('hidden');
         
-        // Atualizar perfil visual
         const name = user.displayName || user.email.split('@')[0];
         userNameDisplay.innerText = name;
         userEmailDisplay.innerText = user.email;
         userAvatar.innerText = name.charAt(0).toUpperCase();
 
-        // Iniciar escuta dos dados do usuário logado
         attachDatabaseListeners();
       } else {
         currentUser = null;
@@ -477,7 +508,6 @@
       }
     }
 
-    // Escutar Banco de Dados filtrado pelo userId
     function attachDatabaseListeners() {
       if (!currentUser) return;
 
@@ -498,6 +528,7 @@
           references = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           renderReferences();
           renderFolders();
+          renderSidebarTags();
         });
     }
 
@@ -508,6 +539,7 @@
       references = [];
       renderFolders();
       renderReferences();
+      renderSidebarTags();
     }
 
     function openFolderModal(folderId = null) {
@@ -579,6 +611,26 @@
     function getDomainFromUrl(url) {
       try {
         return new URL(url).hostname.replace('www.', '');
+      } catch (e) {
+        return url;
+      }
+    }
+
+    // Otimização de Imagens para Alta Qualidade (Pinterest & Outros)
+    function getPreviewImage(url) {
+      try {
+        // Trata imagem/pin direto do Pinterest para obter alta resolução
+        if (url.includes('i.pinimg.com')) {
+          return url.replace(/\/236x\/|\/474x\/|\/736x\//, '/originals/');
+        }
+        
+        // Se for um link de post do Pinterest
+        if (url.includes('pinterest.com/pin/')) {
+          return `https://api.microlink.io/?url=${encodeURIComponent(url)}&embed=image.url&data.image.quality=100`;
+        }
+
+        // Para demais links, solicita prévia em melhor qualidade
+        return `https://api.microlink.io/?url=${encodeURIComponent(url)}&embed=image.url`;
       } catch (e) {
         return url;
       }
@@ -671,17 +723,10 @@
       renderReferences();
     }
 
-    function getPreviewImage(url) {
-      try {
-        return `https://api.microlink.io/?url=${encodeURIComponent(url)}&embed=image.url`;
-      } catch (e) {
-        return null;
-      }
-    }
-
     function openImageViewer(imgUrl, title) {
       document.getElementById('imageViewerSrc').src = imgUrl;
       document.getElementById('imageViewerTitle').innerText = title;
+      document.getElementById('imageViewerDownload').href = imgUrl;
       imageViewerModal.classList.replace('hidden', 'flex');
     }
 
@@ -697,6 +742,54 @@
         ids = ids.concat(getFolderAndSubfolderIds(child.id));
       });
       return ids;
+    }
+
+    // Renderizar Tags na Sidebar Lateral
+    function renderSidebarTags() {
+      const tagCounts = {};
+      references.forEach(r => {
+        if (r.tags && Array.isArray(r.tags)) {
+          r.tags.forEach(t => {
+            const cleanTag = t.toLowerCase();
+            tagCounts[cleanTag] = (tagCounts[cleanTag] || 0) + 1;
+          });
+        }
+      });
+
+      const sortedTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
+
+      if (sortedTags.length === 0) {
+        tagsListSidebar.innerHTML = `<span class="text-xs text-slate-500 italic">Nenhuma tag cadastrada</span>`;
+        btnClearTagFilter.classList.add('hidden');
+        return;
+      }
+
+      if (selectedTagFilter) {
+        btnClearTagFilter.classList.remove('hidden');
+      } else {
+        btnClearTagFilter.classList.add('hidden');
+      }
+
+      tagsListSidebar.innerHTML = sortedTags.map(tag => {
+        const isActive = selectedTagFilter === tag;
+        return `
+          <button onclick="filterByTag('${tag}')" 
+                  class="text-xs px-2.5 py-1 rounded-full font-medium transition-colors flex items-center gap-1 ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
+            #${tag}
+            <span class="text-[10px] opacity-70">(${tagCounts[tag]})</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function filterByTag(tag) {
+      if (selectedTagFilter === tag) {
+        selectedTagFilter = null;
+      } else {
+        selectedTagFilter = tag;
+      }
+      renderSidebarTags();
+      renderReferences();
     }
 
     function renderFolders() {
@@ -779,7 +872,9 @@
         const tagsMatch = r.tags && r.tags.some(tag => tag.toLowerCase().includes(query));
 
         const matchesSearch = titleMatch || notesMatch || tagsMatch;
-        return matchesFolder && matchesSearch;
+        const matchesTagFilter = selectedTagFilter ? (r.tags && r.tags.includes(selectedTagFilter)) : true;
+
+        return matchesFolder && matchesSearch && matchesTagFilter;
       });
 
       if (filtered.length === 0) {
@@ -796,21 +891,21 @@
 
         const tagsHtml = (r.tags && r.tags.length > 0) ? `
           <div class="flex flex-wrap gap-1 mt-2">
-            ${r.tags.map(t => `<span onclick="event.stopPropagation(); searchInput.value='#${t}'; renderReferences();" class="text-[10px] bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium px-2 py-0.5 rounded-full cursor-pointer transition-colors">#${t}</span>`).join('')}
+            ${r.tags.map(t => `<span onclick="event.stopPropagation(); filterByTag('${t}');" class="text-[10px] ${selectedTagFilter === t ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'} font-medium px-2 py-0.5 rounded-full cursor-pointer transition-colors">#${t}</span>`).join('')}
           </div>
         ` : '';
 
         return `
           <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between group">
             <div>
-              <div class="h-40 bg-gray-100 relative overflow-hidden border-b border-gray-100 cursor-zoom-in" onclick="openImageViewer('${previewImg}', '${(r.title || '').replace(/'/g, "\\'")}')">
+              <div class="h-44 bg-gray-100 relative overflow-hidden border-b border-gray-100 cursor-zoom-in" onclick="openImageViewer('${previewImg}', '${(r.title || '').replace(/'/g, "\\'")}')">
                 <img src="${previewImg}" 
                      alt="${r.title}" 
                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                      onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-slate-50 text-slate-300\'><i class=\'fa-regular fa-image text-3xl\'></i></div>';">
                 
                 <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs gap-1 font-medium backdrop-blur-[1px]">
-                  <i class="fa-solid fa-expand"></i> Ampliar
+                  <i class="fa-solid fa-expand"></i> Ampliar Alta Resolução
                 </div>
 
                 <button onclick="event.stopPropagation(); deleteRef('${r.id}')" class="absolute top-2 right-2 bg-white/90 hover:bg-red-500 hover:text-white text-gray-600 p-1.5 rounded-lg shadow-sm backdrop-blur-sm transition-colors text-xs z-10">
