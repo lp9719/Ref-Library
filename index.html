@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,48 +16,41 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+
   <style>
-    /* Custom Scrollbar Eagle Style */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #18181b;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #3f3f46;
-      border-radius: 3px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #52525b;
-    }
+    /* Custom Scrollbar */
+    .dark ::-webkit-scrollbar-track { background: #18181b; }
+    .dark ::-webkit-scrollbar-thumb { background: #3f3f46; }
+    .dark ::-webkit-scrollbar-thumb:hover { background: #52525b; }
 
-    .folder-active {
-      background-color: #27272a !important;
-      color: #60a5fa !important;
-      font-weight: 600;
-    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f4f4f5; }
+    ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+
+    /* Active States */
+    .dark .folder-active { background-color: #27272a !important; color: #60a5fa !important; font-weight: 600; }
+    .folder-active { background-color: #e4e4e7 !important; color: #2563eb !important; font-weight: 600; }
     
-    .card-selected {
-      ring: 2px solid #3b82f6;
-      border-color: #3b82f6 !important;
-    }
+    .card-selected { ring: 2px solid #3b82f6; border-color: #3b82f6 !important; }
 
-    /* Moodboard Canvas Dots */
-    #moodboardCanvas {
+    /* Canvas Grid Background */
+    .dark #moodboardCanvas {
       background-size: 20px 20px;
       background-image: radial-gradient(circle, #3f3f46 1px, transparent 1px);
     }
-    .moodboard-card {
-      touch-action: none;
-      user-select: none;
+    #moodboardCanvas {
+      background-size: 20px 20px;
+      background-image: radial-gradient(circle, #d4d4d8 1px, transparent 1px);
     }
-    .moodboard-card.dragging {
-      opacity: 0.8;
-      cursor: grabbing !important;
-      z-index: 50 !important;
-    }
+
+    .moodboard-card { touch-action: none; user-select: none; }
+    .moodboard-card.dragging { opacity: 0.8; cursor: grabbing !important; z-index: 50 !important; }
   </style>
 
   <script>
@@ -70,21 +63,21 @@
     }
   </script>
 </head>
-<body class="bg-zinc-950 text-zinc-200 font-sans h-screen flex flex-col overflow-hidden select-none">
+<body class="bg-zinc-100 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 font-sans h-screen flex flex-col overflow-hidden select-none transition-colors duration-200">
 
   <!-- ================= AUTH SCREEN ================= -->
-  <div id="authScreen" class="fixed inset-0 bg-zinc-950 z-50 flex items-center justify-center p-4">
-    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden">
+  <div id="authScreen" class="fixed inset-0 bg-zinc-100 dark:bg-zinc-950 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden">
       
       <div class="text-center mb-6">
         <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-600/10 text-blue-500 rounded-xl mb-3 border border-blue-500/20">
           <i class="fa-solid fa-folder-closed text-2xl"></i>
         </div>
-        <h2 class="text-2xl font-bold text-zinc-100" id="authTitle">Entrar no RefHub</h2>
-        <p class="text-xs text-zinc-400 mt-1" id="authSubtitle">Sua biblioteca de inspiração e referências</p>
+        <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100" id="authTitle">Entrar no RefHub</h2>
+        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1" id="authSubtitle">Sua biblioteca de inspiração e referências</p>
       </div>
 
-      <button id="btnGoogleAuth" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium py-2.5 px-4 border border-zinc-700 rounded-xl flex items-center justify-center gap-3 transition-colors shadow-sm mb-4 text-sm">
+      <button id="btnGoogleAuth" class="w-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium py-2.5 px-4 border border-zinc-300 dark:border-zinc-700 rounded-xl flex items-center justify-center gap-3 transition-colors shadow-sm mb-4 text-sm">
         <svg class="w-5 h-5" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -95,37 +88,37 @@
       </button>
 
       <div class="relative flex py-2 items-center mb-4">
-        <div class="flex-grow border-t border-zinc-800"></div>
-        <span class="flex-shrink mx-3 text-zinc-500 text-xs">ou e-mail</span>
-        <div class="flex-grow border-t border-zinc-800"></div>
+        <div class="flex-grow border-t border-zinc-200 dark:border-zinc-800"></div>
+        <span class="flex-shrink mx-3 text-zinc-400 dark:text-zinc-500 text-xs">ou e-mail</span>
+        <div class="flex-grow border-t border-zinc-200 dark:border-zinc-800"></div>
       </div>
 
       <form id="authForm" class="space-y-3">
         <div id="usernameField" class="hidden">
-          <label class="block text-xs font-semibold text-zinc-400 mb-1">Nome de Usuário</label>
-          <input type="text" id="authUsername" placeholder="seu_nome" class="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-zinc-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Nome de Usuário</label>
+          <input type="text" id="authUsername" placeholder="seu_nome" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-zinc-400 mb-1">E-mail</label>
-          <input type="email" id="authEmail" required placeholder="seu@email.com" class="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-zinc-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">E-mail</label>
+          <input type="email" id="authEmail" required placeholder="seu@email.com" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-zinc-400 mb-1">Senha</label>
-          <input type="password" id="authPassword" required placeholder="••••••••" class="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-zinc-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Senha</label>
+          <input type="password" id="authPassword" required placeholder="••••••••" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
         </div>
 
-        <div id="authError" class="text-red-400 text-xs text-center hidden"></div>
+        <div id="authError" class="text-red-500 text-xs text-center hidden"></div>
 
         <button type="submit" id="btnSubmitAuth" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-lg text-sm transition-colors mt-2">
           Entrar
         </button>
       </form>
 
-      <div class="mt-4 text-center text-xs text-zinc-400">
+      <div class="mt-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
         <span id="authToggleText">Ainda não tem conta?</span>
-        <button id="btnToggleAuthMode" class="text-blue-400 hover:underline font-semibold ml-1">Cadastrar-se</button>
+        <button id="btnToggleAuthMode" class="text-blue-500 hover:underline font-semibold ml-1">Cadastrar-se</button>
       </div>
     </div>
   </div>
@@ -133,36 +126,43 @@
   <!-- ================= LAYOUT PRINCIPAL EAGLE (3 COLUNAS) ================= -->
   
   <!-- BARRA SUPERIOR / TOPBAR EAGLE -->
-  <header class="h-12 bg-zinc-900 border-b border-zinc-800/80 px-4 flex items-center justify-between shrink-0 text-xs">
+  <header class="h-12 bg-zinc-200/80 dark:bg-zinc-900 border-b border-zinc-300 dark:border-zinc-800 px-4 flex items-center justify-between shrink-0 text-xs transition-colors">
     <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2 font-bold text-zinc-100 text-sm tracking-wide">
-        <i class="fa-solid fa-folder-closed text-blue-500"></i> RefHub
+      <div class="flex items-center gap-2 font-bold text-zinc-900 dark:text-zinc-100 text-sm tracking-wide">
+        <i class="fa-solid fa-folder-closed text-blue-600 dark:text-blue-500"></i> RefHub
       </div>
-      <span class="text-zinc-600">|</span>
+      <span class="text-zinc-400 dark:text-zinc-600">|</span>
       <!-- Search Input Header -->
       <div class="relative w-64 sm:w-80">
-        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
-        <input type="text" id="searchInput" placeholder="Pesquisar por título, tag, notas..." class="w-full pl-8 pr-3 py-1 bg-zinc-950 border border-zinc-800 rounded-md text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs"></i>
+        <input type="text" id="searchInput" placeholder="Pesquisar por título, tag, notas..." class="w-full pl-8 pr-3 py-1 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-md text-xs text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-blue-500">
       </div>
     </div>
 
     <div class="flex items-center gap-3">
+      <!-- Seletor de Tema Light/Dark -->
+      <button id="themeToggleBtn" title="Alternar Tema" class="px-2.5 py-1 text-xs rounded-md bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-colors">
+        <i id="themeToggleIcon" class="fa-solid fa-moon"></i>
+      </button>
+
+      <span class="text-zinc-300 dark:text-zinc-700">|</span>
+
       <!-- Alternate View Buttons -->
-      <div class="flex bg-zinc-950 p-0.5 rounded-md border border-zinc-800">
-        <button id="btnViewGrid" onclick="switchView('grid')" class="px-2.5 py-1 text-xs rounded bg-zinc-800 text-zinc-100 shadow-sm flex items-center gap-1.5 transition-all">
+      <div class="flex bg-zinc-300/60 dark:bg-zinc-950 p-0.5 rounded-md border border-zinc-300 dark:border-zinc-800">
+        <button id="btnViewGrid" onclick="switchView('grid')" class="px-2.5 py-1 text-xs rounded bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 transition-all">
           <i class="fa-solid fa-border-all"></i> Grade
         </button>
-        <button id="btnViewMoodboard" onclick="switchView('moodboard')" class="px-2.5 py-1 text-xs rounded text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5 transition-all">
+        <button id="btnViewMoodboard" onclick="switchView('moodboard')" class="px-2.5 py-1 text-xs rounded text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center gap-1.5 transition-all">
           <i class="fa-solid fa-cubes"></i> Moodboard
         </button>
       </div>
 
-      <span class="text-zinc-700">|</span>
+      <span class="text-zinc-300 dark:text-zinc-700">|</span>
 
-      <button id="btnBatchRef" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-2.5 py-1 rounded-md flex items-center gap-1.5 transition-colors">
+      <button id="btnBatchRef" class="bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 px-2.5 py-1 rounded-md flex items-center gap-1.5 transition-colors">
         <i class="fa-solid fa-layer-group"></i> Em Lote
       </button>
-      <button id="btnNewRef" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors">
+      <button id="btnNewRef" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors shadow-sm">
         <i class="fa-solid fa-plus"></i> Adicionar
       </button>
     </div>
@@ -172,12 +172,12 @@
   <div class="flex-1 flex overflow-hidden">
     
     <!-- COLUNA 1: SIDEBAR ESQUERDA (NAVEGAÇÃO E PASTAS) -->
-    <aside class="w-64 bg-zinc-900/60 border-r border-zinc-800/80 flex flex-col justify-between shrink-0">
+    <aside class="w-64 bg-zinc-200/50 dark:bg-zinc-900/60 border-r border-zinc-300 dark:border-zinc-800/80 flex flex-col justify-between shrink-0 transition-colors">
       <div class="p-3 flex flex-col h-full overflow-hidden">
         
         <div class="flex items-center justify-between mb-3 px-1">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Biblioteca</span>
-          <button id="btnNewFolder" title="Nova Pasta" class="text-zinc-400 hover:text-zinc-100 text-xs p-1">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Biblioteca</span>
+          <button id="btnNewFolder" title="Nova Pasta" class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 text-xs p-1">
             <i class="fa-solid fa-folder-plus"></i>
           </button>
         </div>
@@ -187,10 +187,10 @@
         </nav>
 
         <!-- Seção de Tags -->
-        <div class="pt-3 border-t border-zinc-800/80 mt-2">
+        <div class="pt-3 border-t border-zinc-300 dark:border-zinc-800/80 mt-2">
           <div class="flex items-center justify-between mb-2 px-1">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Tags</span>
-            <button id="btnClearTagFilter" onclick="filterByTag(null)" class="hidden text-[10px] text-blue-400 hover:underline">Limpar</button>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Tags</span>
+            <button id="btnClearTagFilter" onclick="filterByTag(null)" class="hidden text-[10px] text-blue-600 dark:text-blue-400 hover:underline">Limpar</button>
           </div>
           <div id="tagsListSidebar" class="flex flex-wrap gap-1 max-h-36 overflow-y-auto pr-1">
             <!-- Tags Renderizadas via JS -->
@@ -200,20 +200,20 @@
       </div>
 
       <!-- Rodapé do Usuário -->
-      <div class="p-3 border-t border-zinc-800/80 bg-zinc-900/40 flex items-center justify-between text-xs text-zinc-400">
+      <div class="p-3 border-t border-zinc-300 dark:border-zinc-800/80 bg-zinc-200/80 dark:bg-zinc-900/40 flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400 transition-colors">
         <div class="flex items-center gap-2 overflow-hidden">
           <div id="userAvatar" class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0">U</div>
-          <span id="userNameDisplay" class="truncate text-zinc-300">Usuário</span>
+          <span id="userNameDisplay" class="truncate text-zinc-800 dark:text-zinc-300 font-medium">Usuário</span>
         </div>
         <div class="flex items-center gap-1">
-          <button id="btnOpenBackupModal" title="Backup" class="hover:text-zinc-100 p-1"><i class="fa-solid fa-floppy-disk"></i></button>
-          <button id="btnLogout" title="Sair" class="hover:text-red-400 p-1"><i class="fa-solid fa-right-from-bracket"></i></button>
+          <button id="btnOpenBackupModal" title="Backup" class="hover:text-zinc-900 dark:hover:text-zinc-100 p-1"><i class="fa-solid fa-floppy-disk"></i></button>
+          <button id="btnLogout" title="Sair" class="hover:text-red-600 dark:hover:text-red-400 p-1"><i class="fa-solid fa-right-from-bracket"></i></button>
         </div>
       </div>
     </aside>
 
     <!-- COLUNA 2: ÁREA CENTRAL (GALERIA OU CANVAS MOODBOARD) -->
-    <main class="flex-1 bg-zinc-950 flex flex-col overflow-hidden relative">
+    <main class="flex-1 bg-zinc-100 dark:bg-zinc-950 flex flex-col overflow-hidden relative transition-colors">
       
       <!-- Visualização Grade / Galeria -->
       <section id="mainContent" class="flex-1 overflow-y-auto p-4">
@@ -221,15 +221,15 @@
           <!-- Cards Renderizados em JS -->
         </div>
 
-        <div id="emptyState" class="hidden text-center py-24 text-zinc-500">
+        <div id="emptyState" class="hidden text-center py-24 text-zinc-400 dark:text-zinc-500">
           <i class="fa-regular fa-image text-5xl mb-3 opacity-40"></i>
-          <p class="font-medium text-zinc-400">Nenhum asset encontrado.</p>
-          <p class="text-xs text-zinc-600 mt-1">Arraste links ou clique em + Adicionar para incluir novidades.</p>
+          <p class="font-medium text-zinc-600 dark:text-zinc-400">Nenhum asset encontrado.</p>
+          <p class="text-xs text-zinc-400 dark:text-zinc-600 mt-1">Arraste links ou clique em + Adicionar para incluir novidades.</p>
         </div>
       </section>
 
       <!-- Visualização Moodboard Canvas -->
-      <section id="moodboardSection" class="flex-1 relative overflow-hidden bg-zinc-950 hidden">
+      <section id="moodboardSection" class="flex-1 relative overflow-hidden bg-zinc-100 dark:bg-zinc-950 hidden">
         <div id="moodboardCanvas" class="w-full h-full relative overflow-auto p-8">
           <!-- Canvas Moodboard -->
         </div>
@@ -238,11 +238,11 @@
     </main>
 
     <!-- COLUNA 3: PAINEL DIREITO DE INSPEÇÃO / DETALHES (ESTILO EAGLE) -->
-    <aside id="inspectorPanel" class="w-72 bg-zinc-900/90 border-l border-zinc-800/80 flex flex-col shrink-0 overflow-y-auto">
+    <aside id="inspectorPanel" class="w-72 bg-zinc-200/60 dark:bg-zinc-900/90 border-l border-zinc-300 dark:border-zinc-800/80 flex flex-col shrink-0 overflow-y-auto transition-colors">
       
       <!-- Estado Vazio do Inspector -->
-      <div id="inspectorEmptyState" class="flex flex-col items-center justify-center h-full text-zinc-600 text-center p-6">
-        <i class="fa-solid fa-sliders text-4xl mb-3 opacity-30"></i>
+      <div id="inspectorEmptyState" class="flex flex-col items-center justify-center h-full text-zinc-400 dark:text-zinc-600 text-center p-6">
+        <i class="fa-solid fa-sliders text-4xl mb-3 opacity-40"></i>
         <p class="text-xs font-medium">Selecione uma imagem para visualizar seus detalhes e anotações.</p>
       </div>
 
@@ -250,59 +250,59 @@
       <div id="inspectorContent" class="hidden p-4 space-y-5 text-xs">
         
         <!-- Preview em miniatura ampliada -->
-        <div class="relative bg-zinc-950 rounded-lg overflow-hidden border border-zinc-800 flex items-center justify-center group">
+        <div class="relative bg-white dark:bg-zinc-950 rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-800 flex items-center justify-center group shadow-sm">
           <img id="inspectorImage" src="" alt="" class="w-full h-48 object-contain">
-          <button id="btnInspectorZoom" class="absolute bottom-2 right-2 bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 p-1.5 rounded text-xs transition-colors">
+          <button id="btnInspectorZoom" class="absolute bottom-2 right-2 bg-white/80 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 p-1.5 rounded text-xs transition-colors shadow-sm">
             <i class="fa-solid fa-expand"></i> Ampliar
           </button>
         </div>
 
         <!-- Título e Domínio -->
         <div>
-          <h3 id="inspectorTitle" class="font-bold text-zinc-100 text-sm leading-snug break-words"></h3>
-          <a id="inspectorUrl" href="" target="_blank" class="text-blue-400 hover:underline text-[11px] truncate block mt-1">
+          <h3 id="inspectorTitle" class="font-bold text-zinc-900 dark:text-zinc-100 text-sm leading-snug break-words"></h3>
+          <a id="inspectorUrl" href="" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline text-[11px] truncate block mt-1">
             <i class="fa-solid fa-link text-[10px]"></i> <span id="inspectorDomain"></span>
           </a>
         </div>
 
-        <hr class="border-zinc-800">
+        <hr class="border-zinc-300 dark:border-zinc-800">
 
         <!-- Informações e Metadados -->
-        <div class="space-y-2 text-zinc-400">
+        <div class="space-y-2 text-zinc-500 dark:text-zinc-400">
           <div class="flex justify-between">
             <span>Adicionado em:</span>
-            <span id="inspectorDate" class="text-zinc-200 font-mono"></span>
+            <span id="inspectorDate" class="text-zinc-800 dark:text-zinc-200 font-mono"></span>
           </div>
           <div class="flex justify-between">
             <span>Pasta:</span>
-            <span id="inspectorFolder" class="text-zinc-200"></span>
+            <span id="inspectorFolder" class="text-zinc-800 dark:text-zinc-200"></span>
           </div>
         </div>
 
-        <hr class="border-zinc-800">
+        <hr class="border-zinc-300 dark:border-zinc-800">
 
         <!-- Tags -->
         <div>
-          <label class="block text-zinc-400 font-semibold mb-1.5 uppercase text-[10px] tracking-wider">Tags</label>
+          <label class="block text-zinc-500 dark:text-zinc-400 font-semibold mb-1.5 uppercase text-[10px] tracking-wider">Tags</label>
           <div id="inspectorTags" class="flex flex-wrap gap-1">
             <!-- Tags renderizadas aqui -->
           </div>
         </div>
 
-        <hr class="border-zinc-800">
+        <hr class="border-zinc-300 dark:border-zinc-800">
 
         <!-- Anotações / Descrição -->
         <div>
-          <label class="block text-zinc-400 font-semibold mb-1.5 uppercase text-[10px] tracking-wider">Anotações / Descrição</label>
-          <p id="inspectorNotes" class="bg-zinc-950 p-2.5 rounded border border-zinc-800/80 text-zinc-300 leading-relaxed whitespace-pre-wrap min-h-[60px]"></p>
+          <label class="block text-zinc-500 dark:text-zinc-400 font-semibold mb-1.5 uppercase text-[10px] tracking-wider">Anotações / Descrição</label>
+          <p id="inspectorNotes" class="bg-white dark:bg-zinc-950 p-2.5 rounded border border-zinc-300 dark:border-zinc-800/80 text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap min-h-[60px]"></p>
         </div>
 
         <!-- Ações do Asset -->
         <div class="pt-4 flex gap-2">
-          <a id="btnInspectorOpen" href="" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-1.5 px-3 rounded text-center transition-colors">
+          <a id="btnInspectorOpen" href="" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-1.5 px-3 rounded text-center transition-colors shadow-sm">
             Acessar Link
           </a>
-          <button id="btnInspectorDelete" class="bg-zinc-800 hover:bg-red-900/40 text-red-400 hover:text-red-300 border border-zinc-700/50 px-2.5 py-1.5 rounded transition-colors">
+          <button id="btnInspectorDelete" class="bg-zinc-300/60 dark:bg-zinc-800 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 border border-zinc-300 dark:border-zinc-700/50 px-2.5 py-1.5 rounded transition-colors">
             <i class="fa-solid fa-trash"></i>
           </button>
         </div>
@@ -315,35 +315,35 @@
   <!-- ================= MODAIS ================= -->
 
   <!-- MODAL: Exportar / Importar Backup -->
-  <div id="modalBackup" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
-    <div class="bg-zinc-900 border border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-5 text-xs">
-      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-        <h3 class="text-sm font-bold text-zinc-100 flex items-center gap-2">
+  <div id="modalBackup" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-5 text-xs">
+      <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+        <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
           <i class="fa-solid fa-floppy-disk text-blue-500"></i> Backup & Exportação
         </h3>
-        <button id="btnCloseBackupModal" class="text-zinc-500 hover:text-zinc-300 text-lg">&times;</button>
+        <button id="btnCloseBackupModal" class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-lg">&times;</button>
       </div>
 
       <div>
-        <p class="font-semibold text-zinc-400 uppercase tracking-wider mb-2">Exportar Seus Dados</p>
+        <p class="font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Exportar Seus Dados</p>
         <div class="grid grid-cols-2 gap-3">
-          <button id="btnExportJSON" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-zinc-700">
+          <button id="btnExportJSON" class="bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-zinc-300 dark:border-zinc-700">
             <i class="fa-solid fa-code"></i> Baixar JSON
           </button>
-          <button id="btnExportCSV" class="bg-emerald-700 hover:bg-emerald-600 text-white py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
+          <button id="btnExportCSV" class="bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
             <i class="fa-solid fa-file-excel"></i> Baixar CSV
           </button>
         </div>
       </div>
 
-      <hr class="border-zinc-800">
+      <hr class="border-zinc-200 dark:border-zinc-800">
 
       <div>
-        <p class="font-semibold text-zinc-400 uppercase tracking-wider mb-1">Restaurar / Importar</p>
-        <p class="text-zinc-500 mb-3">Selecione um arquivo .json gerado anteriormente.</p>
+        <p class="font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Restaurar / Importar</p>
+        <p class="text-zinc-400 dark:text-zinc-500 mb-3">Selecione um arquivo .json gerado anteriormente.</p>
         
         <input type="file" id="importJsonInput" accept=".json" class="hidden">
-        <button id="btnTriggerImport" class="w-full bg-zinc-800 hover:bg-zinc-700 text-blue-400 border border-zinc-700 py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
+        <button id="btnTriggerImport" class="w-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-blue-600 dark:text-blue-400 border border-zinc-300 dark:border-zinc-700 py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
           <i class="fa-solid fa-file-import"></i> Selecionar Arquivo JSON
         </button>
       </div>
@@ -351,63 +351,63 @@
   </div>
 
   <!-- MODAL: Nova / Editar Pasta -->
-  <div id="modalFolder" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
-    <div class="bg-zinc-900 border border-zinc-800 rounded-xl max-w-sm w-full p-6 shadow-2xl text-xs">
-      <h3 id="modalFolderTitle" class="text-sm font-bold text-zinc-100 mb-4">Criar Pasta</h3>
+  <div id="modalFolder" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-sm w-full p-6 shadow-2xl text-xs">
+      <h3 id="modalFolderTitle" class="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-4">Criar Pasta</h3>
       <input type="hidden" id="editingFolderId" value="">
       
       <div class="space-y-4">
         <div>
-          <label class="block font-semibold text-zinc-400 mb-1">Nome da Pasta</label>
-          <input type="text" id="folderNameInput" placeholder="Ex: UI Design, Ilustrações..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-200 focus:outline-none focus:border-blue-500">
+          <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Nome da Pasta</label>
+          <input type="text" id="folderNameInput" placeholder="Ex: UI Design, Ilustrações..." class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500">
         </div>
 
         <div>
-          <label class="block font-semibold text-zinc-400 mb-1">Pasta Pai (opcional)</label>
-          <select id="parentFolderSelect" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-200 focus:outline-none focus:border-blue-500"></select>
+          <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Pasta Pai (opcional)</label>
+          <select id="parentFolderSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></select>
         </div>
       </div>
 
       <div class="flex justify-end gap-2 mt-6">
-        <button id="btnCloseFolderModal" class="px-3 py-1.5 text-zinc-400 hover:text-zinc-200">Cancelar</button>
+        <button id="btnCloseFolderModal" class="px-3 py-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200">Cancelar</button>
         <button id="btnSaveFolder" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 font-medium">Salvar</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Nova Referência -->
-  <div id="modalRef" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
-    <div class="bg-zinc-900 border border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl text-xs">
-      <h3 class="text-sm font-bold text-zinc-100 mb-4">Adicionar Referência</h3>
+  <div id="modalRef" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl text-xs">
+      <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-4">Adicionar Referência</h3>
       
       <form id="refForm" class="space-y-3">
         <div>
-          <label class="block font-semibold text-zinc-400 mb-1">Link (URL) *</label>
-          <input type="url" id="refUrl" required placeholder="https://..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-200 focus:outline-none focus:border-blue-500">
+          <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Link (URL) *</label>
+          <input type="url" id="refUrl" required placeholder="https://..." class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500">
         </div>
 
         <div>
-          <label class="block font-semibold text-zinc-400 mb-1">Título (Opcional)</label>
-          <input type="text" id="refTitle" placeholder="Se vazio usa o domínio" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-200 focus:outline-none focus:border-blue-500">
+          <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Título (Opcional)</label>
+          <input type="text" id="refTitle" placeholder="Se vazio usa o domínio" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500">
         </div>
 
         <div>
-          <label class="block font-semibold text-zinc-400 mb-1">Tags (Separadas por vírgula)</label>
-          <input type="text" id="refTags" placeholder="ui, dashboard, 3d" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-200 focus:outline-none focus:border-blue-500">
+          <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Tags (Separadas por vírgula)</label>
+          <input type="text" id="refTags" placeholder="ui, dashboard, 3d" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500">
         </div>
 
         <div>
-          <label class="block font-semibold text-zinc-400 mb-1">Pasta Destino</label>
-          <select id="refFolderSelect" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-200 focus:outline-none focus:border-blue-500"></select>
+          <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Pasta Destino</label>
+          <select id="refFolderSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></select>
         </div>
 
         <div>
-          <label class="block font-semibold text-zinc-400 mb-1">Anotações / Notas</label>
-          <textarea id="refNotes" rows="2" placeholder="Observações..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-200 focus:outline-none focus:border-blue-500"></textarea>
+          <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Anotações / Notas</label>
+          <textarea id="refNotes" rows="2" placeholder="Observações..." class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></textarea>
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" id="btnCloseRefModal" class="px-3 py-1.5 text-zinc-400 hover:text-zinc-200">Cancelar</button>
+          <button type="button" id="btnCloseRefModal" class="px-3 py-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200">Cancelar</button>
           <button type="submit" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 font-medium">Salvar Asset</button>
         </div>
       </form>
@@ -415,29 +415,29 @@
   </div>
 
   <!-- MODAL: Importar em Lote -->
-  <div id="modalBatchRef" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
-    <div class="bg-zinc-900 border border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl text-xs">
-      <h3 class="text-sm font-bold text-zinc-100 mb-1">Adicionar Vários Links</h3>
-      <p class="text-zinc-500 mb-4">Cole uma lista de URLs (uma por linha).</p>
+  <div id="modalBatchRef" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl text-xs">
+      <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1">Adicionar Vários Links</h3>
+      <p class="text-zinc-500 dark:text-zinc-400 mb-4">Cole uma lista de URLs (uma por linha).</p>
       
       <form id="batchForm" class="space-y-3">
         <div>
-          <label class="block font-semibold text-zinc-400 mb-1">URLs (uma por linha)</label>
-          <textarea id="batchUrls" rows="6" required placeholder="https://site1.com/imagem1.jpg&#10;https://site2.com/artigo" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 font-mono text-zinc-200 focus:outline-none focus:border-blue-500"></textarea>
+          <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">URLs (uma por linha)</label>
+          <textarea id="batchUrls" rows="6" required placeholder="https://site1.com/imagem1.jpg&#10;https://site2.com/artigo" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 font-mono text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></textarea>
         </div>
 
         <div>
-          <label class="block font-semibold text-zinc-400 mb-1">Tags para todos</label>
-          <input type="text" id="batchTags" placeholder="inspiração, projeto2026" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-200 focus:outline-none focus:border-blue-500">
+          <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Tags para todos</label>
+          <input type="text" id="batchTags" placeholder="inspiração, projeto2026" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500">
         </div>
 
         <div>
-          <label class="block font-semibold text-zinc-400 mb-1">Pasta Destino</label>
-          <select id="batchFolderSelect" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-200 focus:outline-none focus:border-blue-500"></select>
+          <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Pasta Destino</label>
+          <select id="batchFolderSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></select>
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" id="btnCloseBatchModal" class="px-3 py-1.5 text-zinc-400 hover:text-zinc-200">Cancelar</button>
+          <button type="button" id="btnCloseBatchModal" class="px-3 py-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200">Cancelar</button>
           <button type="submit" id="btnSaveBatch" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 font-medium">Salvar Todos</button>
         </div>
       </form>
@@ -490,6 +490,34 @@
 
     let unsubscribeFolders = null;
     let unsubscribeReferences = null;
+
+    // Lógica do Tema (Light / Dark)
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeToggleIcon = document.getElementById('themeToggleIcon');
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'light' || (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+        document.documentElement.classList.remove('dark');
+        themeToggleIcon.className = 'fa-solid fa-sun text-amber-500';
+      } else {
+        document.documentElement.classList.add('dark');
+        themeToggleIcon.className = 'fa-solid fa-moon text-blue-400';
+      }
+    }
+
+    themeToggleBtn.onclick = () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      if (isDark) {
+        localStorage.setItem('theme', 'dark');
+        themeToggleIcon.className = 'fa-solid fa-moon text-blue-400';
+      } else {
+        localStorage.setItem('theme', 'light');
+        themeToggleIcon.className = 'fa-solid fa-sun text-amber-500';
+      }
+    };
+
+    initTheme();
 
     // Elementos da Interface
     const authScreen = document.getElementById('authScreen');
@@ -664,13 +692,13 @@
       const btnMood = document.getElementById('btnViewMoodboard');
 
       if (view === 'grid') {
-        btnGrid.className = "px-2.5 py-1 text-xs rounded bg-zinc-800 text-zinc-100 shadow-sm flex items-center gap-1.5 transition-all";
-        btnMood.className = "px-2.5 py-1 text-xs rounded text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5 transition-all";
+        btnGrid.className = "px-2.5 py-1 text-xs rounded bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 transition-all";
+        btnMood.className = "px-2.5 py-1 text-xs rounded text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center gap-1.5 transition-all";
         mainContent.classList.remove('hidden');
         moodboardSection.classList.add('hidden');
       } else {
-        btnMood.className = "px-2.5 py-1 text-xs rounded bg-zinc-800 text-zinc-100 shadow-sm flex items-center gap-1.5 transition-all";
-        btnGrid.className = "px-2.5 py-1 text-xs rounded text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5 transition-all";
+        btnMood.className = "px-2.5 py-1 text-xs rounded bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 transition-all";
+        btnGrid.className = "px-2.5 py-1 text-xs rounded text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center gap-1.5 transition-all";
         mainContent.classList.add('hidden');
         moodboardSection.classList.remove('hidden');
       }
@@ -854,7 +882,7 @@
       const sortedTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
 
       if (sortedTags.length === 0) {
-        tagsListSidebar.innerHTML = `<span class="text-[10px] text-zinc-600 italic">Nenhuma tag</span>`;
+        tagsListSidebar.innerHTML = `<span class="text-[10px] text-zinc-400 dark:text-zinc-600 italic">Nenhuma tag</span>`;
         btnClearTagFilter.classList.add('hidden');
         return;
       }
@@ -865,7 +893,7 @@
         const isActive = selectedTagFilter === tag;
         return `
           <button onclick="filterByTag('${tag}')" 
-                  class="text-[10px] px-2 py-0.5 rounded font-medium transition-colors flex items-center gap-1 ${isActive ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}">
+                  class="text-[10px] px-2 py-0.5 rounded font-medium transition-colors flex items-center gap-1 ${isActive ? 'bg-blue-600 text-white' : 'bg-zinc-300/60 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'}">
             #${tag}
             <span class="opacity-60">(${tagCounts[tag]})</span>
           </button>
@@ -897,9 +925,9 @@
     function renderFolders() {
       const allCount = references.length;
       let html = `
-        <button onclick="selectFolder('all')" class="${currentFolderId === 'all' ? 'folder-active' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'} w-full text-left px-2.5 py-1.5 rounded-md flex items-center justify-between text-xs transition-colors">
+        <button onclick="selectFolder('all')" class="${currentFolderId === 'all' ? 'folder-active' : 'text-zinc-700 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-300/50 dark:hover:bg-zinc-800/50'} w-full text-left px-2.5 py-1.5 rounded-md flex items-center justify-between text-xs transition-colors">
           <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group text-blue-500"></i> Todos os Assets</span>
-          <span class="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded">${allCount}</span>
+          <span class="text-[10px] bg-zinc-300/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-1.5 py-0.5 rounded">${allCount}</span>
         </button>
       `;
 
@@ -913,22 +941,22 @@
           const paddingLeft = level * 12 + 10;
 
           html += `
-            <div class="relative flex items-center group rounded-md ${isActive ? 'folder-active' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}">
+            <div class="relative flex items-center group rounded-md ${isActive ? 'folder-active' : 'text-zinc-700 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-300/50 dark:hover:bg-zinc-800/50'}">
               <button onclick="selectFolder('${f.id}')" 
                       style="padding-left: ${paddingLeft}px"
                       class="w-full text-left py-1.5 pr-14 rounded-md flex items-center justify-between text-xs transition-colors">
                 <span class="flex items-center gap-2 truncate">
-                  <i class="${level > 0 ? 'fa-solid fa-turn-up rotate-90 text-zinc-600 text-[10px]' : 'fa-solid fa-folder text-amber-500/80'}"></i>
+                  <i class="${level > 0 ? 'fa-solid fa-turn-up rotate-90 text-zinc-400 dark:text-zinc-600 text-[10px]' : 'fa-solid fa-folder text-amber-500'}"></i>
                   <span class="truncate">${f.name}</span>
                 </span>
-                <span class="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded ml-1">${count}</span>
+                <span class="text-[10px] bg-zinc-300/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-1.5 py-0.5 rounded ml-1">${count}</span>
               </button>
 
-              <div class="opacity-0 group-hover:opacity-100 absolute right-1 flex items-center gap-1 transition-opacity bg-zinc-900/90 px-1 rounded">
-                <button onclick="event.stopPropagation(); openFolderModal('${f.id}')" title="Editar" class="text-zinc-500 hover:text-zinc-200 text-[10px] p-0.5">
+              <div class="opacity-0 group-hover:opacity-100 absolute right-1 flex items-center gap-1 transition-opacity bg-zinc-200 dark:bg-zinc-900 px-1 rounded">
+                <button onclick="event.stopPropagation(); openFolderModal('${f.id}')" title="Editar" class="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-[10px] p-0.5">
                   <i class="fa-solid fa-pen"></i>
                 </button>
-                <button onclick="event.stopPropagation(); deleteFolder('${f.id}')" title="Excluir" class="text-zinc-500 hover:text-red-400 text-[10px] p-0.5">
+                <button onclick="event.stopPropagation(); deleteFolder('${f.id}')" title="Excluir" class="text-zinc-500 hover:text-red-600 dark:hover:text-red-400 text-[10px] p-0.5">
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </div>
@@ -991,9 +1019,9 @@
 
       const tagsContainer = document.getElementById('inspectorTags');
       if (item.tags && item.tags.length > 0) {
-        tagsContainer.innerHTML = item.tags.map(t => `<span class="bg-zinc-800 text-zinc-300 text-[10px] px-2 py-0.5 rounded">#${t}</span>`).join('');
+        tagsContainer.innerHTML = item.tags.map(t => `<span class="bg-zinc-300/60 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-300 text-[10px] px-2 py-0.5 rounded">#${t}</span>`).join('');
       } else {
-        tagsContainer.innerHTML = `<span class="text-zinc-600 text-[10px]">Sem tags</span>`;
+        tagsContainer.innerHTML = `<span class="text-zinc-400 dark:text-zinc-600 text-[10px]">Sem tags</span>`;
       }
 
       document.getElementById('btnInspectorOpen').href = item.url;
@@ -1028,15 +1056,15 @@
 
         return `
           <div id="ref-card-${r.id}" onclick="selectReference('${r.id}')" 
-               class="ref-card bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-zinc-700 transition-all cursor-pointer group flex flex-col justify-between ${isSelected ? 'card-selected' : ''}">
+               class="ref-card bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden hover:border-zinc-400 dark:hover:border-zinc-700 transition-all cursor-pointer group flex flex-col justify-between shadow-sm ${isSelected ? 'card-selected' : ''}">
             <div>
-              <div class="h-36 bg-zinc-950 relative overflow-hidden flex items-center justify-center border-b border-zinc-800/60">
-                <img src="${previewImg}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\'fa-regular fa-image text-zinc-700 text-2xl\'></i>';">
+              <div class="h-36 bg-zinc-100 dark:bg-zinc-950 relative overflow-hidden flex items-center justify-center border-b border-zinc-200 dark:border-zinc-800/60">
+                <img src="${previewImg}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\'fa-regular fa-image text-zinc-400 dark:text-zinc-700 text-2xl\'></i>';">
               </div>
 
               <div class="p-2.5">
-                <h4 class="font-medium text-zinc-200 text-xs line-clamp-1 group-hover:text-blue-400 transition-colors">${r.title || domain}</h4>
-                <p class="text-[10px] text-zinc-500 truncate mt-0.5">${domain}</p>
+                <h4 class="font-medium text-zinc-800 dark:text-zinc-200 text-xs line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${r.title || domain}</h4>
+                <p class="text-[10px] text-zinc-400 dark:text-zinc-500 truncate mt-0.5">${domain}</p>
               </div>
             </div>
           </div>
@@ -1050,9 +1078,9 @@
 
       if (filtered.length === 0) {
         moodboardCanvas.innerHTML = `
-          <div class="flex flex-col items-center justify-center h-full text-center text-zinc-600">
+          <div class="flex flex-col items-center justify-center h-full text-center text-zinc-400 dark:text-zinc-600">
             <i class="fa-solid fa-cubes text-5xl mb-3 opacity-30"></i>
-            <p class="font-medium text-zinc-400 text-xs">Moodboard Vazio</p>
+            <p class="font-medium text-zinc-600 dark:text-zinc-400 text-xs">Moodboard Vazio</p>
           </div>
         `;
         return;
@@ -1061,7 +1089,7 @@
       filtered.forEach((r, index) => {
         const previewImg = getPreviewImage(r.url);
         const card = document.createElement('div');
-        card.className = "moodboard-card absolute bg-zinc-900 rounded-lg border border-zinc-800 overflow-hidden group shadow-xl cursor-grab";
+        card.className = "moodboard-card absolute bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden group shadow-lg cursor-grab";
         card.id = `mb-card-${r.id}`;
         
         const posX = (r.moodboard && r.moodboard.x !== undefined) ? r.moodboard.x : (20 + (index % 4) * 230);
@@ -1073,14 +1101,14 @@
         card.style.width = `${width}px`;
 
         card.innerHTML = `
-          <div class="relative bg-zinc-950">
-            <img src="${previewImg}" class="w-full h-auto object-cover max-h-80 pointer-events-none" onerror="this.src='https://placehold.co/300x200/18181b/52525b?text=Preview'">
+          <div class="relative bg-zinc-100 dark:bg-zinc-950">
+            <img src="${previewImg}" class="w-full h-auto object-cover max-h-80 pointer-events-none" onerror="this.src='https://placehold.co/300x200/e4e4e7/71717a?text=Preview'">
             <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onclick="openImageViewer('${previewImg}', '${(r.title || '').replace(/'/g, "\\'")}')" class="bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 p-1 rounded text-[10px]"><i class="fa-solid fa-expand"></i></button>
+              <button onclick="openImageViewer('${previewImg}', '${(r.title || '').replace(/'/g, "\\'")}')" class="bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 p-1 rounded text-[10px] shadow-sm"><i class="fa-solid fa-expand"></i></button>
             </div>
           </div>
           <div class="p-2">
-            <p class="text-xs font-medium text-zinc-300 truncate">${r.title}</p>
+            <p class="text-xs font-medium text-zinc-800 dark:text-zinc-300 truncate">${r.title}</p>
           </div>
         `;
 
