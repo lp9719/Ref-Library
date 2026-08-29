@@ -177,9 +177,14 @@
         
         <div class="flex items-center justify-between mb-3 px-1">
           <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Biblioteca</span>
-          <button id="btnNewFolder" title="Nova Pasta" class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 text-xs p-1">
-            <i class="fa-solid fa-folder-plus"></i>
-          </button>
+          <div class="flex items-center gap-1">
+            <button onclick="toggleExpandAllFolders()" title="Expandir/Recolher Tudo" class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 text-xs p-1">
+              <i class="fa-solid fa-arrows-up-down"></i>
+            </button>
+            <button id="btnNewFolder" title="Nova Pasta" class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 text-xs p-1">
+              <i class="fa-solid fa-folder-plus"></i>
+            </button>
+          </div>
         </div>
 
         <nav class="space-y-0.5 overflow-y-auto flex-1 pr-1" id="foldersList">
@@ -246,7 +251,7 @@
         <p class="text-xs font-medium">Selecione uma imagem para visualizar seus detalhes e anotações.</p>
       </div>
 
-      <!-- Conteúdo do Inspector (Preenchido via JS ao Clicar em um Asset) -->
+      <!-- Conteúdo do Inspector -->
       <div id="inspectorContent" class="hidden p-4 space-y-5 text-xs">
         
         <!-- Preview em miniatura ampliada -->
@@ -488,6 +493,9 @@
     let currentView = 'grid'; 
     let selectedRefId = null;
 
+    // Estado de Expansão das Pastas (Accordion)
+    let expandedFolders = new Set();
+
     let unsubscribeFolders = null;
     let unsubscribeReferences = null;
 
@@ -660,6 +668,10 @@
         .where('userId', '==', currentUser.uid)
         .onSnapshot(snapshot => {
           folders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          // Por padrão expande pastas raiz ao carregar se não houver preferências salvas
+          if (expandedFolders.size === 0) {
+            folders.forEach(f => { if (!f.parentId) expandedFolders.add(f.id); });
+          }
           renderFolders();
           updateFolderSelects();
         });
@@ -745,7 +757,8 @@
       if (editingId) {
         await db.collection('folders').doc(editingId).update({ name, parentId: parentValue });
       } else {
-        await db.collection('folders').add({ name, parentId: parentValue, userId: currentUser.uid, createdAt: new Date() });
+        const newDoc = await db.collection('folders').add({ name, parentId: parentValue, userId: currentUser.uid, createdAt: new Date() });
+        if (parentValue) expandedFolders.add(parentValue); // Expande pasta pai automaticamente
       }
 
       input.value = '';
@@ -756,6 +769,7 @@
     async function deleteFolder(folderId) {
       if (confirm('Deseja excluir esta pasta?')) {
         await db.collection('folders').doc(folderId).delete();
+        expandedFolders.delete(folderId);
         if (currentFolderId === folderId) selectFolder('all');
       }
     }
@@ -849,6 +863,32 @@
       renderActiveView();
     }
 
+    function toggleFolderExpand(folderId, event) {
+      if (event) event.stopPropagation();
+      if (expandedFolders.has(folderId)) {
+        expandedFolders.delete(folderId);
+      } else {
+        expandedFolders.add(folderId);
+      }
+      renderFolders();
+    }
+
+    function toggleExpandAllFolders() {
+      const hasSubfolders = folders.some(f => folders.some(c => c.parentId === f.id));
+      if (!hasSubfolders) return;
+
+      // Se todas as pastas com filhos já estiverem expandidas, recolhe tudo
+      const parentIds = folders.filter(f => folders.some(c => c.parentId === f.id)).map(f => f.id);
+      const allExpanded = parentIds.every(id => expandedFolders.has(id));
+
+      if (allExpanded) {
+        expandedFolders.clear();
+      } else {
+        parentIds.forEach(id => expandedFolders.add(id));
+      }
+      renderFolders();
+    }
+
     function openImageViewer(imgUrl, title) {
       document.getElementById('imageViewerSrc').src = imgUrl;
       document.getElementById('imageViewerTitle').innerText = title;
@@ -938,15 +978,27 @@
           const subfolderIds = getFolderAndSubfolderIds(f.id);
           const count = references.filter(r => subfolderIds.includes(r.folderId)).length;
           const isActive = currentFolderId === f.id;
-          const paddingLeft = level * 12 + 10;
+          const children = folders.filter(child => child.parentId === f.id);
+          const hasChildren = children.length > 0;
+          const isExpanded = expandedFolders.has(f.id);
+          const paddingLeft = level * 12 + 8;
+
+          const chevronIcon = hasChildren 
+            ? `<span onclick="toggleFolderExpand('${f.id}', event)" class="p-1 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer text-[10px] flex items-center justify-center transition-transform ${isExpanded ? 'rotate-90' : ''}">
+                <i class="fa-solid fa-chevron-right text-zinc-400 dark:text-zinc-500"></i>
+               </span>`
+            : `<span class="w-4 h-4 inline-block"></span>`;
+
+          const folderIconClass = isExpanded && hasChildren ? 'fa-folder-open text-amber-500' : 'fa-folder text-amber-500';
 
           html += `
             <div class="relative flex items-center group rounded-md ${isActive ? 'folder-active' : 'text-zinc-700 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-300/50 dark:hover:bg-zinc-800/50'}">
               <button onclick="selectFolder('${f.id}')" 
                       style="padding-left: ${paddingLeft}px"
                       class="w-full text-left py-1.5 pr-14 rounded-md flex items-center justify-between text-xs transition-colors">
-                <span class="flex items-center gap-2 truncate">
-                  <i class="${level > 0 ? 'fa-solid fa-turn-up rotate-90 text-zinc-400 dark:text-zinc-600 text-[10px]' : 'fa-solid fa-folder text-amber-500'}"></i>
+                <span class="flex items-center gap-1.5 truncate">
+                  ${chevronIcon}
+                  <i class="fa-solid ${folderIconClass} text-xs" onclick="toggleFolderExpand('${f.id}', event)"></i>
                   <span class="truncate">${f.name}</span>
                 </span>
                 <span class="text-[10px] bg-zinc-300/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-1.5 py-0.5 rounded ml-1">${count}</span>
@@ -963,8 +1015,10 @@
             </div>
           `;
 
-          const children = folders.filter(child => child.parentId === f.id);
-          if (children.length > 0) buildFolderTree(children, level + 1);
+          // Exibe subpastas apenas se a pasta pai estiver expandida
+          if (hasChildren && isExpanded) {
+            buildFolderTree(children, level + 1);
+          }
         });
       }
 
