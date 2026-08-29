@@ -22,20 +22,20 @@
 <body class="bg-gray-100 font-sans h-screen flex flex-col md:flex-row overflow-hidden">
 
   <!-- Sidebar (Menu Lateral) -->
-  <aside class="w-full md:w-64 bg-slate-900 text-white flex flex-col justify-between shrink-0 h-auto md:h-full">
-    <div class="p-4">
-      <div class="flex items-center justify-between mb-6">
+  <aside class="w-full md:w-72 bg-slate-900 text-white flex flex-col justify-between shrink-0 h-auto md:h-full">
+    <div class="p-4 flex flex-col h-full overflow-hidden">
+      <div class="flex items-center justify-between mb-6 shrink-0">
         <h1 class="text-xl font-bold tracking-wide flex items-center gap-2">
           <i class="fa-solid fa-bookmark text-blue-500"></i> RefHub
         </h1>
-        <button id="btnNewFolder" class="bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 px-2 rounded flex items-center gap-1">
-          <i class="fa-solid fa-folder-plus"></i> Nova
+        <button id="btnNewFolder" class="bg-blue-600 hover:bg-blue-700 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 font-medium transition-colors">
+          <i class="fa-solid fa-folder-plus"></i> Nova Pasta
         </button>
       </div>
 
-      <!-- Lista de Pastas -->
-      <nav class="space-y-1 overflow-y-auto max-h-[40vh] md:max-h-[calc(100vh-160px)]" id="foldersList">
-        <button onclick="selectFolder('all')" id="folder-all" class="folder-active w-full text-left px-3 py-2 rounded flex items-center justify-between text-sm transition-colors">
+      <!-- Lista de Pastas e Subpastas -->
+      <nav class="space-y-1 overflow-y-auto flex-1 pr-1" id="foldersList">
+        <button onclick="selectFolder('all')" id="folder-all" class="folder-active w-full text-left px-3 py-2 rounded-lg flex items-center justify-between text-sm transition-colors">
           <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Todas as Referências</span>
           <span id="count-all" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">0</span>
         </button>
@@ -43,12 +43,12 @@
     </div>
 
     <!-- Status de Sincronização -->
-    <div class="p-4 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+    <div class="p-4 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between shrink-0">
       <span class="flex items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
         Firebase On
       </span>
-      <span class="text-[10px] text-slate-500">v2.0</span>
+      <span class="text-[10px] text-slate-500">v2.1</span>
     </div>
   </aside>
 
@@ -56,7 +56,7 @@
   <main class="flex-1 flex flex-col h-full overflow-hidden">
     
     <!-- Header/Busca -->
-    <header class="bg-white border-b border-gray-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <header class="bg-white border-b border-gray-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
       <div class="relative w-full sm:w-80">
         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
         <input type="text" id="searchInput" placeholder="Pesquisar referências..." class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -67,9 +67,9 @@
       </button>
     </header>
 
-    <!-- Área de Conteúdo (Cards/Tabela) -->
+    <!-- Área de Conteúdo (Cards com Imagem) -->
     <section class="flex-1 overflow-y-auto p-4 md:p-6" id="mainContent">
-      <div id="referencesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div id="referencesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         <!-- Renderizado dinamicamente pelo JS -->
       </div>
       
@@ -83,27 +83,41 @@
 
   </main>
 
-  <!-- MODAL: Nova Pasta -->
+  <!-- MODAL: Nova Pasta/Subpasta -->
   <div id="modalFolder" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-lg max-w-sm w-full p-6 shadow-xl">
-      <h3 class="text-lg font-bold text-gray-800 mb-4">Criar Nova Pasta</h3>
-      <input type="text" id="folderNameInput" placeholder="Nome da pasta..." class="w-full border border-gray-300 rounded-lg p-2 text-sm mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-      <div class="flex justify-end gap-2">
+    <div class="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Criar Pasta ou Subpasta</h3>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Nome da Pasta</label>
+          <input type="text" id="folderNameInput" placeholder="Ex: Design System, Artigos..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Pasta Pai (opcional para subpasta)</label>
+          <select id="parentFolderSelect" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="root">Nenhuma (Pasta Raiz)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 mt-6">
         <button id="btnCloseFolderModal" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-        <button id="btnSaveFolder" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">Salvar</button>
+        <button id="btnSaveFolder" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Salvar</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Nova Referência -->
   <div id="modalRef" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+    <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
       <h3 class="text-lg font-bold text-gray-800 mb-4">Adicionar Referência</h3>
       
       <form id="refForm" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1">Título</label>
-          <input type="text" id="refTitle" required placeholder="Ex: Artigo sobre UI/UX" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <input type="text" id="refTitle" required placeholder="Ex: Guia de Flexbox" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
         </div>
 
         <div>
@@ -112,7 +126,7 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Pasta</label>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Pasta de Destino</label>
           <select id="refFolderSelect" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
             <!-- Opções populadas dinamicamente -->
           </select>
@@ -125,18 +139,18 @@
 
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" id="btnCloseRefModal" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-          <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">Salvar Referência</button>
+          <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Salvar Referência</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Firebase Scripts (v9+ Compatibility) -->
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // Suas configurações reais do Firebase já inseridas aqui:
+    // Suas configurações reais do Firebase:
     const firebaseConfig = {
       apiKey: "AIzaSyB0TXsAPXMmt_5QI8UPY028zjXy9dYQxAQ",
       authDomain: "refhub-studio.firebaseapp.com",
@@ -146,52 +160,56 @@
       appId: "1:334625263765:web:ec9ee61d266db34eb10b9c"
     };
 
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Estado da Aplicação
     let folders = [];
     let references = [];
     let currentFolderId = 'all';
 
-    // Elementos do DOM
     const foldersList = document.getElementById('foldersList');
     const referencesGrid = document.getElementById('referencesGrid');
     const emptyState = document.getElementById('emptyState');
     const refFolderSelect = document.getElementById('refFolderSelect');
+    const parentFolderSelect = document.getElementById('parentFolderSelect');
     const searchInput = document.getElementById('searchInput');
 
-    // Modais
     const modalFolder = document.getElementById('modalFolder');
     const modalRef = document.getElementById('modalRef');
 
-    // Botões dos Modais
     document.getElementById('btnNewFolder').onclick = () => modalFolder.classList.replace('hidden', 'flex');
     document.getElementById('btnCloseFolderModal').onclick = () => modalFolder.classList.replace('flex', 'hidden');
     document.getElementById('btnNewRef').onclick = () => modalRef.classList.replace('hidden', 'flex');
     document.getElementById('btnCloseRefModal').onclick = () => modalRef.classList.replace('flex', 'hidden');
 
-    // Escutar Mudanças nas Pastas no Firestore
+    // Escutar Pastas
     db.collection('folders').onSnapshot(snapshot => {
       folders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       renderFolders();
-      updateSelectFolders();
+      updateFolderSelects();
     });
 
-    // Escutar Mudanças nas Referências no Firestore
+    // Escutar Referências
     db.collection('references').onSnapshot(snapshot => {
       references = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       renderReferences();
+      renderFolders();
     });
 
-    // Salvar Pasta
+    // Salvar Pasta ou Subpasta
     document.getElementById('btnSaveFolder').onclick = async () => {
       const input = document.getElementById('folderNameInput');
+      const parentId = parentFolderSelect.value;
       const name = input.value.trim();
+      
       if (name) {
-        await db.collection('folders').add({ name, createdAt: new Date() });
+        await db.collection('folders').add({ 
+          name, 
+          parentId: parentId === 'root' ? null : parentId,
+          createdAt: new Date() 
+        });
         input.value = '';
+        parentFolderSelect.value = 'root';
         modalFolder.classList.replace('flex', 'hidden');
       }
     };
@@ -226,56 +244,96 @@
     // Selecionar Pasta Ativa
     function selectFolder(id) {
       currentFolderId = id;
-      document.querySelectorAll('#foldersList button').forEach(btn => {
-        btn.classList.remove('folder-active');
-        btn.classList.add('hover:bg-slate-800', 'text-slate-300');
-      });
-      
-      const activeBtn = document.getElementById(`folder-${id}`);
-      if (activeBtn) {
-        activeBtn.classList.add('folder-active');
-        activeBtn.classList.remove('hover:bg-slate-800', 'text-slate-300');
-      }
+      renderFolders();
       renderReferences();
     }
 
-    // Renderizar Lista de Pastas
+    // Função para obter imagem de visualização / logo da URL
+    function getPreviewImage(url) {
+      try {
+        const parsedUrl = new URL(url);
+        // Gerador de captura/thumbnail gratuito utilizando microlink
+        return `https://api.microlink.io/?url=${encodeURIComponent(url)}&embed=image.url`;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // Obter todos os IDs de subpastas recursivamente
+    function getFolderAndSubfolderIds(folderId) {
+      let ids = [folderId];
+      const children = folders.filter(f => f.parentId === folderId);
+      children.forEach(child => {
+        ids = ids.concat(getFolderAndSubfolderIds(child.id));
+      });
+      return ids;
+    }
+
+    // Renderizar Árvore de Pastas (Pastas e Subpastas)
     function renderFolders() {
-      // Manter a pasta "Todas"
       const allCount = references.length;
-      foldersList.innerHTML = `
-        <button onclick="selectFolder('all')" id="folder-all" class="${currentFolderId === 'all' ? 'folder-active' : 'hover:bg-slate-800 text-slate-300'} w-full text-left px-3 py-2 rounded flex items-center justify-between text-sm transition-colors">
+      let html = `
+        <button onclick="selectFolder('all')" id="folder-all" class="${currentFolderId === 'all' ? 'folder-active' : 'hover:bg-slate-800 text-slate-300'} w-full text-left px-3 py-2 rounded-lg flex items-center justify-between text-sm transition-colors mb-1">
           <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Todas as Referências</span>
           <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">${allCount}</span>
         </button>
       `;
 
-      folders.forEach(f => {
-        const count = references.filter(r => r.folderId === f.id).length;
-        const isActive = currentFolderId === f.id;
-        foldersList.innerHTML += `
-          <button onclick="selectFolder('${f.id}')" id="folder-${f.id}" class="${isActive ? 'folder-active' : 'hover:bg-slate-800 text-slate-300'} w-full text-left px-3 py-2 rounded flex items-center justify-between text-sm transition-colors">
-            <span class="flex items-center gap-2 truncate"><i class="fa-regular fa-folder"></i> ${f.name}</span>
-            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">${count}</span>
-          </button>
-        `;
-      });
+      // Renderizar Pastas Raízes (sem parentId)
+      const rootFolders = folders.filter(f => !f.parentId);
+
+      function buildFolderTree(folderList, level = 0) {
+        folderList.forEach(f => {
+          const subfolderIds = getFolderAndSubfolderIds(f.id);
+          const count = references.filter(r => subfolderIds.includes(r.folderId)).length;
+          const isActive = currentFolderId === f.id;
+          const paddingLeft = level * 16 + 12;
+
+          html += `
+            <button onclick="selectFolder('${f.id}')" id="folder-${f.id}" 
+                    style="padding-left: ${paddingLeft}px"
+                    class="${isActive ? 'folder-active' : 'hover:bg-slate-800 text-slate-300'} w-full text-left py-2 pr-3 rounded-lg flex items-center justify-between text-sm transition-colors mb-0.5">
+              <span class="flex items-center gap-2 truncate">
+                <i class="${level > 0 ? 'fa-solid fa-turn-up rotate-90 text-slate-500 text-xs' : 'fa-regular fa-folder'}"></i>
+                <span class="truncate">${f.name}</span>
+              </span>
+              <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full ml-1">${count}</span>
+            </button>
+          `;
+
+          const children = folders.filter(child => child.parentId === f.id);
+          if (children.length > 0) {
+            buildFolderTree(children, level + 1);
+          }
+        });
+      }
+
+      buildFolderTree(rootFolders);
+      foldersList.innerHTML = html;
     }
 
-    // Atualizar opções de pastas no formulário
-    function updateSelectFolders() {
+    // Atualizar dropdowns de seleção de pastas
+    function updateFolderSelects() {
+      // Para selecionar Pasta Pai no modal de nova pasta
+      parentFolderSelect.innerHTML = `<option value="root">Nenhuma (Pasta Raiz)</option>`;
+      
+      // Para selecionar Pasta de destino no modal de nova referência
       refFolderSelect.innerHTML = `<option value="all">Geral (Sem pasta)</option>`;
+
       folders.forEach(f => {
-        refFolderSelect.innerHTML += `<option value="${f.id}">${f.name}</option>`;
+        const prefix = f.parentId ? '— ' : '';
+        parentFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
+        refFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
       });
     }
 
-    // Renderizar Referências
+    // Renderizar Referências com Imagem
     function renderReferences() {
       const query = searchInput.value.toLowerCase();
+      const validFolderIds = currentFolderId === 'all' ? null : getFolderAndSubfolderIds(currentFolderId);
       
       let filtered = references.filter(r => {
-        const matchesFolder = currentFolderId === 'all' || r.folderId === currentFolderId;
+        const matchesFolder = currentFolderId === 'all' || (validFolderIds && validFolderIds.includes(r.folderId));
         const matchesSearch = r.title.toLowerCase().includes(query) || (r.notes && r.notes.toLowerCase().includes(query));
         return matchesFolder && matchesSearch;
       });
@@ -287,28 +345,47 @@
       }
 
       emptyState.classList.add('hidden');
-      referencesGrid.innerHTML = filtered.map(r => `
-        <div class="bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow flex flex-col justify-between">
-          <div>
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <h4 class="font-semibold text-gray-800 text-base leading-snug line-clamp-2">${r.title}</h4>
-              <button onclick="deleteRef('${r.id}')" class="text-gray-400 hover:text-red-500 text-xs p-1">
-                <i class="fa-solid fa-trash"></i>
-              </button>
+      referencesGrid.innerHTML = filtered.map(r => {
+        const previewImg = getPreviewImage(r.url);
+        let domain = '';
+        try { domain = new URL(r.url).hostname.replace('www.', ''); } catch(e) {}
+
+        return `
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between group">
+            <div>
+              <!-- Imagem de Pré-visualização -->
+              <div class="h-36 bg-gray-100 relative overflow-hidden border-b border-gray-100">
+                <img src="${previewImg}" 
+                     alt="${r.title}" 
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-slate-50 text-slate-300\'><i class=\'fa-regular fa-image text-3xl\'></i></div>';">
+                
+                <button onclick="deleteRef('${r.id}')" class="absolute top-2 right-2 bg-white/90 hover:bg-red-500 hover:text-white text-gray-600 p-1.5 rounded-lg shadow-sm backdrop-blur-sm transition-colors text-xs">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+
+              <div class="p-4">
+                <div class="flex items-center gap-2 mb-1">
+                  <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="w-4 h-4 rounded" alt="" onerror="this.style.display='none'">
+                  <span class="text-[11px] text-gray-400 font-medium truncate">${domain}</span>
+                </div>
+                
+                <h4 class="font-semibold text-gray-800 text-base leading-snug line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">${r.title}</h4>
+                ${r.notes ? `<p class="text-xs text-gray-500 line-clamp-2 mb-2">${r.notes}</p>` : ''}
+              </div>
             </div>
-            ${r.notes ? `<p class="text-xs text-gray-500 mb-3 line-clamp-3">${r.notes}</p>` : ''}
+            
+            <div class="px-4 pb-4 pt-0">
+              <a href="${r.url}" target="_blank" rel="noopener noreferrer" class="w-full bg-slate-50 hover:bg-blue-50 text-blue-600 font-medium text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors border border-gray-200/80">
+                Acessar Link <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+              </a>
+            </div>
           </div>
-          
-          <div class="pt-3 border-t border-gray-100 flex items-center justify-between text-xs mt-2">
-            <a href="${r.url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline flex items-center gap-1 font-medium">
-              Acessar Link <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-            </a>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
-    // Busca em Tempo Real
     searchInput.addEventListener('input', renderReferences);
   </script>
 </body>
