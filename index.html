@@ -123,23 +123,28 @@
     </div>
   </div>
 
-  <!-- ================= LAYOUT PRINCIPAL EAGLE (3 COLUNAS) ================= -->
+  <!-- ================= LAYOUT PRINCIPAL EAGLE ================= -->
   
   <!-- BARRA SUPERIOR / TOPBAR EAGLE -->
   <header class="h-12 bg-zinc-200/80 dark:bg-zinc-900 border-b border-zinc-300 dark:border-zinc-800 px-4 flex items-center justify-between shrink-0 text-xs transition-colors">
     <div class="flex items-center gap-3">
+      <!-- Botão para Recolher/Mostrar Sidebar Esquerda -->
+      <button id="btnToggleLeftSidebar" onclick="toggleLeftSidebar()" title="Alternar Painel de Pastas" class="px-2 py-1 rounded bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors">
+        <i class="fa-solid fa-sidebar"></i>
+      </button>
+
       <div class="flex items-center gap-2 font-bold text-zinc-900 dark:text-zinc-100 text-sm tracking-wide">
         <i class="fa-solid fa-folder-closed text-blue-600 dark:text-blue-500"></i> RefHub
       </div>
       <span class="text-zinc-400 dark:text-zinc-600">|</span>
       <!-- Search Input Header -->
-      <div class="relative w-64 sm:w-80">
+      <div class="relative w-48 sm:w-80">
         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs"></i>
         <input type="text" id="searchInput" placeholder="Pesquisar por título, tag, notas..." class="w-full pl-8 pr-3 py-1 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-md text-xs text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-blue-500">
       </div>
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2 sm:gap-3">
       <!-- Seletor de Tema Light/Dark -->
       <button id="themeToggleBtn" title="Alternar Tema" class="px-2.5 py-1 text-xs rounded-md bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-colors">
         <i id="themeToggleIcon" class="fa-solid fa-moon"></i>
@@ -150,29 +155,36 @@
       <!-- Alternate View Buttons -->
       <div class="flex bg-zinc-300/60 dark:bg-zinc-950 p-0.5 rounded-md border border-zinc-300 dark:border-zinc-800">
         <button id="btnViewGrid" onclick="switchView('grid')" class="px-2.5 py-1 text-xs rounded bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 transition-all">
-          <i class="fa-solid fa-border-all"></i> Grade
+          <i class="fa-solid fa-border-all"></i> <span class="hidden sm:inline">Grade</span>
         </button>
         <button id="btnViewMoodboard" onclick="switchView('moodboard')" class="px-2.5 py-1 text-xs rounded text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center gap-1.5 transition-all">
-          <i class="fa-solid fa-cubes"></i> Moodboard
+          <i class="fa-solid fa-cubes"></i> <span class="hidden sm:inline">Moodboard</span>
         </button>
       </div>
 
       <span class="text-zinc-300 dark:text-zinc-700">|</span>
 
       <button id="btnBatchRef" class="bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 px-2.5 py-1 rounded-md flex items-center gap-1.5 transition-colors">
-        <i class="fa-solid fa-layer-group"></i> Em Lote
+        <i class="fa-solid fa-layer-group"></i> <span class="hidden md:inline">Em Lote</span>
       </button>
       <button id="btnNewRef" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors shadow-sm">
-        <i class="fa-solid fa-plus"></i> Adicionar
+        <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Adicionar</span>
+      </button>
+
+      <span class="text-zinc-300 dark:text-zinc-700">|</span>
+
+      <!-- Botão para Recolher/Mostrar Inspector Direito -->
+      <button id="btnToggleRightSidebar" onclick="toggleRightSidebar()" title="Alternar Painel de Detalhes" class="px-2 py-1 rounded bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors">
+        <i class="fa-solid fa-sliders"></i>
       </button>
     </div>
   </header>
 
   <!-- CORPO PRINCIPAL COM 3 PAINÉIS -->
-  <div class="flex-1 flex overflow-hidden">
+  <div class="flex-1 flex overflow-hidden relative">
     
     <!-- COLUNA 1: SIDEBAR ESQUERDA (NAVEGAÇÃO E PASTAS) -->
-    <aside class="w-64 bg-zinc-200/50 dark:bg-zinc-900/60 border-r border-zinc-300 dark:border-zinc-800/80 flex flex-col justify-between shrink-0 transition-colors">
+    <aside id="leftSidebar" class="w-64 bg-zinc-200/50 dark:bg-zinc-900/60 border-r border-zinc-300 dark:border-zinc-800/80 flex flex-col justify-between shrink-0 transition-all duration-200">
       <div class="p-3 flex flex-col h-full overflow-hidden">
         
         <div class="flex items-center justify-between mb-3 px-1">
@@ -183,6 +195,9 @@
             </button>
             <button id="btnNewFolder" title="Nova Pasta" class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 text-xs p-1">
               <i class="fa-solid fa-folder-plus"></i>
+            </button>
+            <button onclick="toggleLeftSidebar()" title="Ocultar Painel" class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 text-xs p-1 ml-1">
+              <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
         </div>
@@ -217,6 +232,11 @@
       </div>
     </aside>
 
+    <!-- Botão Flutuante quando a Sidebar Esquerda estiver Fechada -->
+    <button id="btnOpenLeftFloating" onclick="toggleLeftSidebar()" title="Abrir Pastas" class="hidden absolute top-3 left-3 z-30 bg-white/90 dark:bg-zinc-900/90 border border-zinc-300 dark:border-zinc-800 shadow-md p-2 rounded-lg text-xs text-zinc-700 dark:text-zinc-300 hover:text-blue-500">
+      <i class="fa-solid fa-folder"></i>
+    </button>
+
     <!-- COLUNA 2: ÁREA CENTRAL (GALERIA OU CANVAS MOODBOARD) -->
     <main class="flex-1 bg-zinc-100 dark:bg-zinc-950 flex flex-col overflow-hidden relative transition-colors">
       
@@ -242,9 +262,17 @@
 
     </main>
 
-    <!-- COLUNA 3: PAINEL DIREITO DE INSPEÇÃO / DETALHES (ESTILO EAGLE) -->
-    <aside id="inspectorPanel" class="w-72 bg-zinc-200/60 dark:bg-zinc-900/90 border-l border-zinc-300 dark:border-zinc-800/80 flex flex-col shrink-0 overflow-y-auto transition-colors">
+    <!-- COLUNA 3: PAINEL DIREITO DE INSPEÇÃO / DETALHES -->
+    <aside id="inspectorPanel" class="w-72 bg-zinc-200/60 dark:bg-zinc-900/90 border-l border-zinc-300 dark:border-zinc-800/80 flex flex-col shrink-0 overflow-y-auto transition-all duration-200">
       
+      <!-- Cabeçalho do Inspector com opção de Fechar -->
+      <div class="px-4 pt-3 flex items-center justify-between text-zinc-500 border-b border-zinc-300/50 dark:border-zinc-800/50 pb-2">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Detalhes do Asset</span>
+        <button onclick="toggleRightSidebar()" title="Ocultar Painel" class="hover:text-zinc-900 dark:hover:text-zinc-100 text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
       <!-- Estado Vazio do Inspector -->
       <div id="inspectorEmptyState" class="flex flex-col items-center justify-center h-full text-zinc-400 dark:text-zinc-600 text-center p-6">
         <i class="fa-solid fa-sliders text-4xl mb-3 opacity-40"></i>
@@ -496,6 +524,10 @@
     // Estado de Expansão das Pastas (Accordion)
     let expandedFolders = new Set();
 
+    // Estado de Visibilidade das Colunas Laterais
+    let isLeftSidebarOpen = true;
+    let isRightSidebarOpen = true;
+
     let unsubscribeFolders = null;
     let unsubscribeReferences = null;
 
@@ -526,6 +558,36 @@
     };
 
     initTheme();
+
+    // Toggle Colunas Laterais
+    function toggleLeftSidebar() {
+      const leftSidebar = document.getElementById('leftSidebar');
+      const btnOpenLeftFloating = document.getElementById('btnOpenLeftFloating');
+      isLeftSidebarOpen = !isLeftSidebarOpen;
+
+      if (isLeftSidebarOpen) {
+        leftSidebar.classList.remove('-ml-64', 'w-0', 'p-0', 'opacity-0');
+        leftSidebar.classList.add('w-64');
+        btnOpenLeftFloating.classList.add('hidden');
+      } else {
+        leftSidebar.classList.add('-ml-64', 'w-0', 'p-0', 'opacity-0');
+        leftSidebar.classList.remove('w-64');
+        btnOpenLeftFloating.classList.remove('hidden');
+      }
+    }
+
+    function toggleRightSidebar() {
+      const inspectorPanel = document.getElementById('inspectorPanel');
+      isRightSidebarOpen = !isRightSidebarOpen;
+
+      if (isRightSidebarOpen) {
+        inspectorPanel.classList.remove('-mr-72', 'w-0', 'opacity-0');
+        inspectorPanel.classList.add('w-72');
+      } else {
+        inspectorPanel.classList.add('-mr-72', 'w-0', 'opacity-0');
+        inspectorPanel.classList.remove('w-72');
+      }
+    }
 
     // Elementos da Interface
     const authScreen = document.getElementById('authScreen');
@@ -668,7 +730,6 @@
         .where('userId', '==', currentUser.uid)
         .onSnapshot(snapshot => {
           folders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          // Por padrão expande pastas raiz ao carregar se não houver preferências salvas
           if (expandedFolders.size === 0) {
             folders.forEach(f => { if (!f.parentId) expandedFolders.add(f.id); });
           }
@@ -758,7 +819,7 @@
         await db.collection('folders').doc(editingId).update({ name, parentId: parentValue });
       } else {
         const newDoc = await db.collection('folders').add({ name, parentId: parentValue, userId: currentUser.uid, createdAt: new Date() });
-        if (parentValue) expandedFolders.add(parentValue); // Expande pasta pai automaticamente
+        if (parentValue) expandedFolders.add(parentValue);
       }
 
       input.value = '';
@@ -877,7 +938,6 @@
       const hasSubfolders = folders.some(f => folders.some(c => c.parentId === f.id));
       if (!hasSubfolders) return;
 
-      // Se todas as pastas com filhos já estiverem expandidas, recolhe tudo
       const parentIds = folders.filter(f => folders.some(c => c.parentId === f.id)).map(f => f.id);
       const allExpanded = parentIds.every(id => expandedFolders.has(id));
 
@@ -1015,7 +1075,6 @@
             </div>
           `;
 
-          // Exibe subpastas apenas se a pasta pai estiver expandida
           if (hasChildren && isExpanded) {
             buildFolderTree(children, level + 1);
           }
@@ -1048,6 +1107,11 @@
       const activeCard = document.getElementById(`ref-card-${id}`);
       if (activeCard) activeCard.classList.add('card-selected');
       updateInspector(id);
+      
+      // Se o inspector estiver fechado em telas pequenas ao clicar no card, abre ele automaticamente
+      if (!isRightSidebarOpen && window.innerWidth > 640) {
+        toggleRightSidebar();
+      }
     }
 
     function updateInspector(id) {
