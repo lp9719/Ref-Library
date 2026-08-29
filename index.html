@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RefHub - Gerenciador de Referências</title>
   
+  <!-- Configurações para PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/566/566737.png">
+  
   <!-- FontAwesome & Tailwind CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,14 +28,117 @@
       opacity: 1;
     }
   </style>
+
+  <!-- Registro do Service Worker (PWA) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker registrado com sucesso!', reg))
+          .catch(err => console.log('Falha ao registrar Service Worker:', err));
+      });
+    }
+  </script>
 </head>
 <body class="bg-gray-100 font-sans h-screen flex flex-col md:flex-row overflow-hidden">
 
+  <!-- ================= TELA DE AUTENTICAÇÃO ================= -->
+  <div id="authScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden">
+      
+      <!-- Cabeçalho do Auth -->
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 text-blue-600 rounded-xl mb-3">
+          <i class="fa-solid fa-bookmark text-2xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800" id="authTitle">Entrar no RefHub</h2>
+        <p class="text-xs text-gray-500 mt-1" id="authSubtitle">Acesse sua biblioteca de referências</p>
+      </div>
+
+      <!-- Botão Entrar com Google -->
+      <button id="btnGoogleAuth" class="w-full bg-white hover:bg-gray-50 text-gray-700 font-medium py-2.5 px-4 border border-gray-300 rounded-xl flex items-center justify-center gap-3 transition-colors shadow-sm mb-4 text-sm">
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        Continuar com o Google
+      </button>
+
+      <div class="relative flex py-2 items-center mb-4">
+        <div class="flex-grow border-t border-gray-200"></div>
+        <span class="flex-shrink mx-3 text-gray-400 text-xs">ou e-mail</span>
+        <div class="flex-grow border-t border-gray-200"></div>
+      </div>
+
+      <!-- Formulário E-mail/Senha -->
+      <form id="authForm" class="space-y-3">
+        
+        <!-- Campo Username (Apenas visível no cadastro) -->
+        <div id="usernameField" class="hidden">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Nome de Usuário (Username)</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+            <input type="text" id="authUsername" placeholder="seu_nome" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+            <input type="email" id="authEmail" required placeholder="seu@email.com" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Senha</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+            <input type="password" id="authPassword" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div id="authError" class="text-red-500 text-xs text-center hidden"></div>
+
+        <button type="submit" id="btnSubmitAuth" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg text-sm transition-colors mt-2">
+          Entrar
+        </button>
+      </form>
+
+      <!-- Alternador Login / Cadastro -->
+      <div class="mt-4 text-center text-xs text-gray-500">
+        <span id="authToggleText">Ainda não tem conta?</span>
+        <button id="btnToggleAuthMode" class="text-blue-600 hover:underline font-semibold ml-1">Cadastrar-se</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PAINEL PRINCIPAL (APP) ================= -->
+  
   <!-- Sidebar (Menu Lateral) -->
   <aside class="w-full md:w-72 bg-slate-900 text-white flex flex-col justify-between shrink-0 h-auto md:h-full">
     <div class="p-4 flex flex-col h-full overflow-hidden">
-      <div class="flex items-center justify-between mb-6 shrink-0">
-        <h1 class="text-xl font-bold tracking-wide flex items-center gap-2">
+      
+      <!-- Topo Sidebar com Perfil de Usuário -->
+      <div class="flex items-center justify-between mb-4 shrink-0 pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-2 overflow-hidden">
+          <div id="userAvatar" class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0">
+            U
+          </div>
+          <div class="truncate">
+            <p id="userNameDisplay" class="text-xs font-semibold text-slate-200 truncate">Carregando...</p>
+            <p id="userEmailDisplay" class="text-[10px] text-slate-400 truncate">...</p>
+          </div>
+        </div>
+        <button id="btnLogout" title="Sair da Conta" class="text-slate-400 hover:text-red-400 text-sm p-1.5 rounded-lg transition-colors">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between mb-4 shrink-0">
+        <h1 class="text-lg font-bold tracking-wide flex items-center gap-2">
           <i class="fa-solid fa-bookmark text-blue-500"></i> RefHub
         </h1>
         <button id="btnNewFolder" class="bg-blue-600 hover:bg-blue-700 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 font-medium transition-colors">
@@ -51,7 +161,7 @@
         <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
         Firebase On
       </span>
-      <span class="text-[10px] text-slate-500">v2.2</span>
+      <span class="text-[10px] text-slate-500">v4.0 (Auth)</span>
     </div>
   </aside>
 
@@ -62,12 +172,17 @@
     <header class="bg-white border-b border-gray-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
       <div class="relative w-full sm:w-80">
         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        <input type="text" id="searchInput" placeholder="Pesquisar referências..." class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text" id="searchInput" placeholder="Buscar por título, nota ou #tag..." class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
       </div>
 
-      <button id="btnNewRef" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors">
-        <i class="fa-solid fa-plus"></i> Nova Referência
-      </button>
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <button id="btnBatchRef" class="w-1/2 sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-colors border border-gray-300">
+          <i class="fa-solid fa-layer-group"></i> Em Lote
+        </button>
+        <button id="btnNewRef" class="w-1/2 sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors">
+          <i class="fa-solid fa-plus"></i> Nova Referência
+        </button>
+      </div>
     </header>
 
     <!-- Área de Conteúdo (Cards com Imagem) -->
@@ -85,6 +200,8 @@
     </section>
 
   </main>
+
+  <!-- MODAIS -->
 
   <!-- MODAL: Nova / Editar Pasta -->
   <div id="modalFolder" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
@@ -113,20 +230,25 @@
     </div>
   </div>
 
-  <!-- MODAL: Nova / Editar Referência -->
+  <!-- MODAL: Nova Referência Única -->
   <div id="modalRef" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
       <h3 class="text-lg font-bold text-gray-800 mb-4">Adicionar Referência</h3>
       
       <form id="refForm" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Título</label>
-          <input type="text" id="refTitle" required placeholder="Ex: Guia de Flexbox" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Link (URL) *</label>
+          <input type="url" id="refUrl" required placeholder="https://..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Link (URL)</label>
-          <input type="url" id="refUrl" required placeholder="https://..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Título <span class="text-gray-400 font-normal">(Opcional)</span></label>
+          <input type="text" id="refTitle" placeholder="Ex: Guia de Flexbox (se vazio usa a URL)" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Tags <span class="text-gray-400 font-normal">(Separadas por vírgula)</span></label>
+          <input type="text" id="refTags" placeholder="Ex: ui, landing-page, inspiração" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
         </div>
 
         <div>
@@ -138,7 +260,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1">Anotações / Descrição</label>
-          <textarea id="refNotes" rows="3" placeholder="Resumo, observações..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+          <textarea id="refNotes" rows="2" placeholder="Resumo, observações..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
@@ -149,7 +271,39 @@
     </div>
   </div>
 
-  <!-- MODAL: Visualizar Imagem Ampliada (Lightbox) -->
+  <!-- MODAL: Adicionar em Lote -->
+  <div id="modalBatchRef" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-lg w-full p-6 shadow-xl">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">Adicionar Vários Links / Imagens</h3>
+      <p class="text-xs text-gray-500 mb-4">Cole uma lista de URLs (uma por linha) para importar todas de uma vez.</p>
+      
+      <form id="batchForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Links / URLs (uma por linha)</label>
+          <textarea id="batchUrls" rows="6" required placeholder="https://site1.com/imagem1.jpg&#10;https://site2.com/artigo&#10;https://site3.com" class="w-full border border-gray-300 rounded-lg p-2 text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Tags para todos os links <span class="text-gray-400 font-normal">(Opcional)</span></label>
+          <input type="text" id="batchTags" placeholder="Ex: lote, busca-2026, fotos" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Pasta de Destino</label>
+          <select id="batchFolderSelect" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <!-- Opções populadas dinamicamente -->
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" id="btnCloseBatchModal" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+          <button type="submit" id="btnSaveBatch" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Salvar Todos</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Lightbox Imagem Ampliada -->
   <div id="imageViewerModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50 transition-opacity" onclick="closeImageViewer()">
     <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center" onclick="event.stopPropagation()">
       <button onclick="closeImageViewer()" class="absolute -top-10 right-0 text-white hover:text-gray-300 text-xl font-bold bg-slate-800/60 rounded-full w-8 h-8 flex items-center justify-center">
@@ -160,12 +314,12 @@
     </div>
   </div>
 
-  <!-- Firebase Scripts -->
+  <!-- Firebase SDKs (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // Suas configurações reais do Firebase:
     const firebaseConfig = {
       apiKey: "AIzaSyB0TXsAPXMmt_5QI8UPY028zjXy9dYQxAQ",
       authDomain: "refhub-studio.firebaseapp.com",
@@ -176,50 +330,185 @@
     };
 
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.firestore();
 
+    let currentUser = null;
+    let isSignUpMode = false;
     let folders = [];
     let references = [];
     let currentFolderId = 'all';
+    let unsubscribeFolders = null;
+    let unsubscribeReferences = null;
+
+    // Elementos da Interface
+    const authScreen = document.getElementById('authScreen');
+    const authForm = document.getElementById('authForm');
+    const authTitle = document.getElementById('authTitle');
+    const authSubtitle = document.getElementById('authSubtitle');
+    const authUsername = document.getElementById('authUsername');
+    const usernameField = document.getElementById('usernameField');
+    const authEmail = document.getElementById('authEmail');
+    const authPassword = document.getElementById('authPassword');
+    const authError = document.getElementById('authError');
+    const btnSubmitAuth = document.getElementById('btnSubmitAuth');
+    const btnToggleAuthMode = document.getElementById('btnToggleAuthMode');
+    const authToggleText = document.getElementById('authToggleText');
+    const btnGoogleAuth = document.getElementById('btnGoogleAuth');
+    const btnLogout = document.getElementById('btnLogout');
+
+    const userNameDisplay = document.getElementById('userNameDisplay');
+    const userEmailDisplay = document.getElementById('userEmailDisplay');
+    const userAvatar = document.getElementById('userAvatar');
 
     const foldersList = document.getElementById('foldersList');
     const referencesGrid = document.getElementById('referencesGrid');
     const emptyState = document.getElementById('emptyState');
     const refFolderSelect = document.getElementById('refFolderSelect');
+    const batchFolderSelect = document.getElementById('batchFolderSelect');
     const parentFolderSelect = document.getElementById('parentFolderSelect');
     const searchInput = document.getElementById('searchInput');
 
     const modalFolder = document.getElementById('modalFolder');
     const modalRef = document.getElementById('modalRef');
+    const modalBatchRef = document.getElementById('modalBatchRef');
     const imageViewerModal = document.getElementById('imageViewerModal');
 
-    // Botões dos Modais
+    // Modais Controls
     document.getElementById('btnNewFolder').onclick = () => openFolderModal();
     document.getElementById('btnCloseFolderModal').onclick = () => modalFolder.classList.replace('flex', 'hidden');
     document.getElementById('btnNewRef').onclick = () => modalRef.classList.replace('hidden', 'flex');
     document.getElementById('btnCloseRefModal').onclick = () => modalRef.classList.replace('flex', 'hidden');
+    document.getElementById('btnBatchRef').onclick = () => modalBatchRef.classList.replace('hidden', 'flex');
+    document.getElementById('btnCloseBatchModal').onclick = () => modalBatchRef.classList.replace('flex', 'hidden');
 
-    // Escutar Pastas
-    db.collection('folders').onSnapshot(snapshot => {
-      folders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderFolders();
-      updateFolderSelects();
+    // Alternar modo Login/Cadastro
+    btnToggleAuthMode.onclick = () => {
+      isSignUpMode = !isSignUpMode;
+      authError.classList.add('hidden');
+      if (isSignUpMode) {
+        authTitle.innerText = 'Criar Conta no RefHub';
+        authSubtitle.innerText = 'Preencha os dados abaixo';
+        usernameField.classList.remove('hidden');
+        btnSubmitAuth.innerText = 'Cadastrar';
+        authToggleText.innerText = 'Já possui uma conta?';
+        btnToggleAuthMode.innerText = 'Fazer Login';
+      } else {
+        authTitle.innerText = 'Entrar no RefHub';
+        authSubtitle.innerText = 'Acesse sua biblioteca de referências';
+        usernameField.classList.add('hidden');
+        btnSubmitAuth.innerText = 'Entrar';
+        authToggleText.innerText = 'Ainda não tem conta?';
+        btnToggleAuthMode.innerText = 'Cadastrar-se';
+      }
+    };
+
+    // Submeter Auth Form (E-mail/Senha)
+    authForm.onsubmit = async (e) => {
+      e.preventDefault();
+      authError.classList.add('hidden');
+      const email = authEmail.value.trim();
+      const password = authPassword.value;
+
+      try {
+        if (isSignUpMode) {
+          const username = authUsername.value.trim() || email.split('@')[0];
+          const result = await auth.createUserWithEmailAndPassword(email, password);
+          await result.user.updateProfile({ displayName: username });
+        } else {
+          await auth.signInWithEmailAndPassword(email, password);
+        }
+      } catch (err) {
+        authError.innerText = translateAuthError(err.code);
+        authError.classList.remove('hidden');
+      }
+    };
+
+    // Auth Google
+    btnGoogleAuth.onclick = async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        await auth.signInWithPopup(provider);
+      } catch (err) {
+        authError.innerText = translateAuthError(err.code);
+        authError.classList.remove('hidden');
+      }
+    };
+
+    // Logout
+    btnLogout.onclick = () => auth.signOut();
+
+    // Observador de Estado do Usuário
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        authScreen.classList.add('hidden');
+        
+        // Atualizar perfil visual
+        const name = user.displayName || user.email.split('@')[0];
+        userNameDisplay.innerText = name;
+        userEmailDisplay.innerText = user.email;
+        userAvatar.innerText = name.charAt(0).toUpperCase();
+
+        // Iniciar escuta dos dados do usuário logado
+        attachDatabaseListeners();
+      } else {
+        currentUser = null;
+        authScreen.classList.remove('hidden');
+        detachDatabaseListeners();
+      }
     });
 
-    // Escutar Referências
-    db.collection('references').onSnapshot(snapshot => {
-      references = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    function translateAuthError(code) {
+      switch (code) {
+        case 'auth/invalid-email': return 'E-mail inválido.';
+        case 'auth/user-not-found': return 'Usuário não encontrado.';
+        case 'auth/wrong-password': return 'Senha incorreta.';
+        case 'auth/email-already-in-use': return 'Este e-mail já está em uso.';
+        case 'auth/weak-password': return 'A senha deve ter pelo menos 6 caracteres.';
+        default: return 'Erro ao autenticar. Tente novamente.';
+      }
+    }
+
+    // Escutar Banco de Dados filtrado pelo userId
+    function attachDatabaseListeners() {
+      if (!currentUser) return;
+
+      if (unsubscribeFolders) unsubscribeFolders();
+      if (unsubscribeReferences) unsubscribeReferences();
+
+      unsubscribeFolders = db.collection('folders')
+        .where('userId', '==', currentUser.uid)
+        .onSnapshot(snapshot => {
+          folders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderFolders();
+          updateFolderSelects();
+        });
+
+      unsubscribeReferences = db.collection('references')
+        .where('userId', '==', currentUser.uid)
+        .onSnapshot(snapshot => {
+          references = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderReferences();
+          renderFolders();
+        });
+    }
+
+    function detachDatabaseListeners() {
+      if (unsubscribeFolders) unsubscribeFolders();
+      if (unsubscribeReferences) unsubscribeReferences();
+      folders = [];
+      references = [];
+      renderFolders();
       renderReferences();
-      renderFolders();
-    });
+    }
 
-    // Abrir Modal de Pasta (Criar ou Editar)
     function openFolderModal(folderId = null) {
       const modalTitle = document.getElementById('modalFolderTitle');
       const input = document.getElementById('folderNameInput');
       const editingId = document.getElementById('editingFolderId');
 
-      updateFolderSelects(folderId); // Evita selecionar a própria pasta como pai
+      updateFolderSelects(folderId);
 
       if (folderId) {
         const folder = folders.find(f => f.id === folderId);
@@ -239,28 +528,26 @@
       modalFolder.classList.replace('hidden', 'flex');
     }
 
-    // Salvar ou Atualizar Pasta
     document.getElementById('btnSaveFolder').onclick = async () => {
       const input = document.getElementById('folderNameInput');
       const parentId = parentFolderSelect.value;
       const editingId = document.getElementById('editingFolderId').value;
       const name = input.value.trim();
 
-      if (!name) return;
+      if (!name || !currentUser) return;
 
       const parentValue = parentId === 'root' ? null : parentId;
 
       if (editingId) {
-        // Atualizar Pasta Existente
         await db.collection('folders').doc(editingId).update({
           name: name,
           parentId: parentValue
         });
       } else {
-        // Criar Nova Pasta
         await db.collection('folders').add({ 
           name, 
           parentId: parentValue,
+          userId: currentUser.uid,
           createdAt: new Date() 
         });
       }
@@ -270,29 +557,48 @@
       modalFolder.classList.replace('flex', 'hidden');
     };
 
-    // Excluir Pasta
     async function deleteFolder(folderId) {
-      if (confirm('Deseja excluir esta pasta? As referências contidas nela não serão deletadas.')) {
+      if (confirm('Deseja excluir esta pasta? As referências não serão excluídas.')) {
         await db.collection('folders').doc(folderId).delete();
-        if (currentFolderId === folderId) {
-          selectFolder('all');
-        }
+        if (currentFolderId === folderId) selectFolder('all');
       }
     }
 
-    // Salvar Referência
+    function parseTags(tagString) {
+      if (!tagString) return [];
+      return tagString.split(',').map(t => t.trim().toLowerCase().replace(/^#/, '')).filter(t => t.length > 0);
+    }
+
+    function getDomainFromUrl(url) {
+      try {
+        return new URL(url).hostname.replace('www.', '');
+      } catch (e) {
+        return url;
+      }
+    }
+
+    // Salvar Referência Única
     document.getElementById('refForm').onsubmit = async (e) => {
       e.preventDefault();
-      const title = document.getElementById('refTitle').value;
-      const url = document.getElementById('refUrl').value;
+      if (!currentUser) return;
+
+      const url = document.getElementById('refUrl').value.trim();
+      let title = document.getElementById('refTitle').value.trim();
+      const rawTags = document.getElementById('refTags').value;
       const folderId = refFolderSelect.value;
       const notes = document.getElementById('refNotes').value;
+
+      if (!title) {
+        title = getDomainFromUrl(url);
+      }
 
       await db.collection('references').add({
         title,
         url,
         folderId,
         notes,
+        tags: parseTags(rawTags),
+        userId: currentUser.uid,
         createdAt: new Date()
       });
 
@@ -300,21 +606,64 @@
       modalRef.classList.replace('flex', 'hidden');
     };
 
-    // Deletar Referência
+    // Salvar em Lote
+    document.getElementById('batchForm').onsubmit = async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const rawUrls = document.getElementById('batchUrls').value;
+      const rawTags = document.getElementById('batchTags').value;
+      const folderId = batchFolderSelect.value;
+
+      const urls = rawUrls.split('\n').map(u => u.trim()).filter(u => u.length > 0);
+      const tags = parseTags(rawTags);
+
+      if (urls.length === 0) return;
+
+      const btnSave = document.getElementById('btnSaveBatch');
+      btnSave.disabled = true;
+      btnSave.innerText = 'Salvando...';
+
+      const batch = db.batch();
+
+      urls.forEach(url => {
+        let validUrl = url;
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          validUrl = 'https://' + url;
+        }
+
+        const docRef = db.collection('references').doc();
+        batch.set(docRef, {
+          title: getDomainFromUrl(validUrl),
+          url: validUrl,
+          folderId: folderId,
+          notes: '',
+          tags: tags,
+          userId: currentUser.uid,
+          createdAt: new Date()
+        });
+      });
+
+      await batch.commit();
+
+      btnSave.disabled = false;
+      btnSave.innerText = 'Salvar Todos';
+      e.target.reset();
+      modalBatchRef.classList.replace('flex', 'hidden');
+    };
+
     async function deleteRef(id) {
       if (confirm('Deseja realmente excluir esta referência?')) {
         await db.collection('references').doc(id).delete();
       }
     }
 
-    // Selecionar Pasta Ativa
     function selectFolder(id) {
       currentFolderId = id;
       renderFolders();
       renderReferences();
     }
 
-    // Obter imagem da URL
     function getPreviewImage(url) {
       try {
         return `https://api.microlink.io/?url=${encodeURIComponent(url)}&embed=image.url`;
@@ -323,20 +672,17 @@
       }
     }
 
-    // Abrir Modal de Imagem Ampliada
     function openImageViewer(imgUrl, title) {
       document.getElementById('imageViewerSrc').src = imgUrl;
       document.getElementById('imageViewerTitle').innerText = title;
       imageViewerModal.classList.replace('hidden', 'flex');
     }
 
-    // Fechar Modal de Imagem Ampliada
     function closeImageViewer() {
       imageViewerModal.classList.replace('flex', 'hidden');
       document.getElementById('imageViewerSrc').src = '';
     }
 
-    // Obter todos os IDs de subpastas recursivamente
     function getFolderAndSubfolderIds(folderId) {
       let ids = [folderId];
       const children = folders.filter(f => f.parentId === folderId);
@@ -346,7 +692,6 @@
       return ids;
     }
 
-    // Renderizar Árvore de Pastas (Com Ações de Editar/Deletar)
     function renderFolders() {
       const allCount = references.length;
       let html = `
@@ -377,9 +722,8 @@
                 <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full ml-1">${count}</span>
               </button>
 
-              <!-- Botões de Ação ao passar o mouse -->
               <div class="folder-actions opacity-0 group-hover:opacity-100 absolute right-2 flex items-center gap-1.5 transition-opacity bg-slate-900/90 px-1 py-0.5 rounded">
-                <button onclick="event.stopPropagation(); openFolderModal('${f.id}')" title="Editar / Mover Pasta" class="text-slate-400 hover:text-white text-xs p-1">
+                <button onclick="event.stopPropagation(); openFolderModal('${f.id}')" title="Editar Pasta" class="text-slate-400 hover:text-white text-xs p-1">
                   <i class="fa-solid fa-pen-to-square"></i>
                 </button>
                 <button onclick="event.stopPropagation(); deleteFolder('${f.id}')" title="Excluir Pasta" class="text-slate-400 hover:text-red-400 text-xs p-1">
@@ -400,30 +744,34 @@
       foldersList.innerHTML = html;
     }
 
-    // Atualizar dropdowns de seleção de pastas
     function updateFolderSelects(currentEditingId = null) {
       parentFolderSelect.innerHTML = `<option value="root">Nenhuma (Pasta Raiz)</option>`;
       refFolderSelect.innerHTML = `<option value="all">Geral (Sem pasta)</option>`;
+      batchFolderSelect.innerHTML = `<option value="all">Geral (Sem pasta)</option>`;
 
       folders.forEach(f => {
-        // Evita que uma pasta seja marcada como pai dela mesma
         if (f.id !== currentEditingId) {
           const prefix = f.parentId ? '— ' : '';
           parentFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
         }
         const prefix = f.parentId ? '— ' : '';
         refFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
+        batchFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
       });
     }
 
-    // Renderizar Referências com Click para Zoom da Imagem
     function renderReferences() {
-      const query = searchInput.value.toLowerCase();
+      const query = searchInput.value.toLowerCase().replace(/^#/, '');
       const validFolderIds = currentFolderId === 'all' ? null : getFolderAndSubfolderIds(currentFolderId);
       
       let filtered = references.filter(r => {
         const matchesFolder = currentFolderId === 'all' || (validFolderIds && validFolderIds.includes(r.folderId));
-        const matchesSearch = r.title.toLowerCase().includes(query) || (r.notes && r.notes.toLowerCase().includes(query));
+        
+        const titleMatch = r.title && r.title.toLowerCase().includes(query);
+        const notesMatch = r.notes && r.notes.toLowerCase().includes(query);
+        const tagsMatch = r.tags && r.tags.some(tag => tag.toLowerCase().includes(query));
+
+        const matchesSearch = titleMatch || notesMatch || tagsMatch;
         return matchesFolder && matchesSearch;
       });
 
@@ -439,11 +787,16 @@
         let domain = '';
         try { domain = new URL(r.url).hostname.replace('www.', ''); } catch(e) {}
 
+        const tagsHtml = (r.tags && r.tags.length > 0) ? `
+          <div class="flex flex-wrap gap-1 mt-2">
+            ${r.tags.map(t => `<span onclick="event.stopPropagation(); searchInput.value='#${t}'; renderReferences();" class="text-[10px] bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium px-2 py-0.5 rounded-full cursor-pointer transition-colors">#${t}</span>`).join('')}
+          </div>
+        ` : '';
+
         return `
           <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between group">
             <div>
-              <!-- Imagem Clicável (Abre Lightbox) -->
-              <div class="h-40 bg-gray-100 relative overflow-hidden border-b border-gray-100 cursor-zoom-in" onclick="openImageViewer('${previewImg}', '${r.title.replace(/'/g, "\\'")}')">
+              <div class="h-40 bg-gray-100 relative overflow-hidden border-b border-gray-100 cursor-zoom-in" onclick="openImageViewer('${previewImg}', '${(r.title || '').replace(/'/g, "\\'")}')">
                 <img src="${previewImg}" 
                      alt="${r.title}" 
                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -464,12 +817,13 @@
                   <span class="text-[11px] text-gray-400 font-medium truncate">${domain}</span>
                 </div>
                 
-                <h4 class="font-semibold text-gray-800 text-base leading-snug line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">${r.title}</h4>
+                <h4 class="font-semibold text-gray-800 text-base leading-snug line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors">${r.title || domain}</h4>
                 ${r.notes ? `<p class="text-xs text-gray-500 line-clamp-2 mb-2">${r.notes}</p>` : ''}
+                ${tagsHtml}
               </div>
             </div>
             
-            <div class="px-4 pb-4 pt-0">
+            <div class="px-4 pb-4 pt-2">
               <a href="${r.url}" target="_blank" rel="noopener noreferrer" class="w-full bg-slate-50 hover:bg-blue-50 text-blue-600 font-medium text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors border border-gray-200/80">
                 Acessar Link <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
               </a>
