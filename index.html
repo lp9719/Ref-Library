@@ -295,101 +295,120 @@ Acessar Link
 </div>
 <!-- ================= MODAIS & SESSÃO DE PRÁTICA ================= -->
 <!-- MODAL: Configurar Prática Timed -->
-<div id="modalPractice" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
-<div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl text-xs">
-<div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-4">
-<h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-<i class="fa-solid fa-stopwatch text-amber-500"></i> Prática Timed (Gesture Drawing)
-</h3>
-<button id="btnClosePracticeModal" class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-lg">&times;</button>
-</div>
-<form id="practiceForm" class="space-y-4">
-<div>
-<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Filtrar Origem das Imagens</label>
-<select id="practiceSourceType" onchange="togglePracticeSourceOptions()" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
-<option value="all">Misto (Toda a Biblioteca)</option>
-<option value="folder">Por Pasta</option>
-<option value="tag">Por Tag</option>
-</select>
-</div>
-<div id="practiceFolderContainer" class="hidden">
-<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Selecione a Pasta</label>
-<select id="practiceFolderSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500"></select>
-</div>
-<div id="practiceTagContainer" class="hidden">
-<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Selecione a Tag</label>
-<select id="practiceTagSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500"></select>
-</div>
-<div>
-<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Tempo por Imagem</label>
-<select id="practiceTimeSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
-<option value="30">30 segundos</option>
-<option value="45">45 segundos</option>
-<option value="60" selected>1 minuto</option>
-<option value="120">2 minutos</option>
-<option value="300">5 minutos</option>
-<option value="600">10 minutos</option>
-<option value="custom">Personalizado (segundos)</option>
-  </select>
-  <input type="number" id="practiceCustomTimeInput" min="5" placeholder="Digite os segundos (ex: 90)" class="hidden w-full mt-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
-</div>
+<div id="modalPractice" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl w-full max-w-md p-6 shadow-2xl">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+        <i class="fa-solid fa-stopwatch text-amber-500"></i> Prática Guiada (Timed Practice)
+      </h3>
+      <button onclick="modalPractice.classList.replace('flex', 'hidden')" class="text-zinc-400 hover:text-zinc-200">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
 
-<!-- Intervalo de Descanso -->
-<div>
-  <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Intervalo entre Imagens (Troca de folha)</label>
-  <select id="practiceRestSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
-    <option value="0">Sem intervalo</option>
-    <option value="5">5 segundos</option>
-    <option value="10" selected>10 segundos</option>
-    <option value="15">15 segundos</option>
-    <option value="30">30 segundos</option>
-  </select>
-</div>
-  <div class="flex items-center gap-2 pt-1">
-<input type="checkbox" id="practiceRandomize" checked class="rounded bg-zinc-950 border-zinc-800 text-amber-500 focus:ring-0">
-<label for="practiceRandomize" class="text-zinc-700 dark:text-zinc-300">Embaralhar ordem (Random)</label>
-</div>
-<div class="flex justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
-<button type="button" id="btnCancelPractice" class="px-3 py-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200">Cancelar</button>
-<button type="submit" class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-medium shadow-sm transition-colors flex items-center gap-1.5">
-<i class="fa-solid fa-play text-xs"></i> Iniciar Treino
-</button>
-</div>
-</form>
-</div>
-</div>
-<!-- TELA CHEIA: Sessão de Prática (Modo Foco / Zen) -->
-<div id="practiceView" class="fixed inset-0 bg-zinc-950 z-50 hidden flex-col justify-between items-center select-none overflow-hidden p-6">
-<!-- Topbar Foco -->
-<div class="w-full max-w-5xl flex items-center justify-between text-zinc-400 text-xs">
-<div class="flex items-center gap-3">
-<span id="practiceCounter" class="font-mono bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800 text-zinc-300">0/0</span>
-<span id="practiceCurrentTitle" class="truncate max-w-xs sm:max-w-md text-zinc-400"></span>
-</div>
-<!-- Cronômetro central grande com status de descanso -->
-<div class="flex flex-col items-center">
-  <span id="practiceStatusBadge" class="hidden text-[10px] uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mb-1">Descanso</span>
-  <div class="flex items-center gap-2">
-    <i class="fa-solid fa-clock text-amber-500"></i>
-    <span id="practiceTimerDisplay" class="font-mono text-2xl font-bold text-amber-400 tracking-wider">00:00</span>
+    <form id="practiceForm" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">Origem das Imagens</label>
+        <select id="practiceSourceType" onchange="togglePracticeSourceOptions()" class="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-sm">
+          <option value="all">Todas as Referências</option>
+          <option value="folder">Pasta Específica</option>
+          <option value="tag">Tag Específica</option>
+        </select>
+      </div>
+
+      <div id="practiceFolderContainer" class="hidden">
+        <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">Selecione a Pasta</label>
+        <select id="practiceFolderSelect" class="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-sm"></select>
+      </div>
+
+      <div id="practiceTagContainer" class="hidden">
+        <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">Selecione a Tag</label>
+        <select id="practiceTagSelect" class="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-sm"></select>
+      </div>
+
+      <!-- Tempo por Imagem com Customização Funcional -->
+      <div>
+        <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">Tempo por Imagem</label>
+        <select id="practiceTimeSelect" onchange="toggleCustomTimeInput()" class="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-sm">
+          <option value="30">30 segundos</option>
+          <option value="45">45 segundos</option>
+          <option value="60" selected>1 minuto</option>
+          <option value="120">2 minutos</option>
+          <option value="300">5 minutos</option>
+          <option value="600">10 minutos</option>
+          <option value="custom">Personalizado (em segundos)</option>
+        </select>
+        <input type="number" id="practiceCustomTimeInput" min="5" placeholder="Digite os segundos (ex: 90)" class="hidden w-full mt-2 bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-sm focus:outline-none focus:border-amber-500">
+      </div>
+
+      <!-- Intervalo de descanso -->
+      <div>
+        <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">Pausa para Troca de Folha / Descanso</label>
+        <select id="practiceRestSelect" class="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-sm">
+          <option value="0">Sem intervalo</option>
+          <option value="5">5 segundos</option>
+          <option value="10" selected>10 segundos</option>
+          <option value="15">15 segundos</option>
+          <option value="30">30 segundos</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2 pt-1">
+        <input type="checkbox" id="practiceRandomize" checked class="rounded border-zinc-700 bg-zinc-900 text-amber-500 focus:ring-amber-500">
+        <label for="practiceRandomize" class="text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer">Embaralhar ordem das imagens</label>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+        <button type="button" onclick="modalPractice.classList.replace('flex', 'hidden')" class="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">Cancelar</button>
+        <button type="submit" class="px-4 py-2 text-xs font-medium bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors">Iniciar Prática</button>
+      </div>
+    </form>
   </div>
 </div>
-<!-- Área de Exibição da Imagem Principal -->
-<div class="flex-1 w-full max-w-5xl my-4 relative flex items-center justify-center overflow-hidden">
-<img id="practiceImage" src="" alt="Prática" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-opacity duration-200 opacity-100">
-</div>
-<!-- Barra de Controles Inferior -->
-<div class="w-full max-w-md bg-zinc-900/90 border border-zinc-800/80 rounded-2xl p-3 flex items-center justify-around text-zinc-300 shadow-2xl backdrop-blur-sm">
-<button onclick="prevPracticeImage()" title="Anterior (Seta Esquerda)" class="hover:text-amber-400 p-2 transition-colors">
-<i class="fa-solid fa-backward-step text-lg"></i>
-</button>
-<button onclick="togglePausePractice()" id="btnPausePractice" title="Pausar / Continuar (Espaço)" class="bg-amber-600 hover:bg-amber-500 text-white w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-md">
-<i class="fa-solid fa-pause text-sm"></i>
-</button>
-<button onclick="nextPracticeImage()" title="Próxima (Seta Direita)" class="hover:text-amber-400 p-2 transition-colors">
-<i class="fa-solid fa-forward-step text-lg"></i>
-</button>
-</div>
+<!-- TELA CHEIA: Sessão de Prática (Modo Foco / Zen) -->
+<div id="practiceView" class="fixed inset-0 bg-black/95 z-50 hidden flex-col items-center justify-between p-4 selection:bg-none">
+  <!-- Topo: Título da Imagem e Botão de Fechar -->
+  <div class="w-full flex items-center justify-between max-w-6xl px-2">
+    <div>
+      <h3 id="practiceCurrentTitle" class="text-sm font-semibold text-zinc-300 truncate max-w-md">Título da Referência</h3>
+      <span id="practiceStatusBadge" class="hidden text-[10px] uppercase font-bold tracking-wider text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30">Descanso / Troca de Folha</span>
+    </div>
+    <button onclick="stopPracticeSession()" title="Sair da Prática (Esc)" class="bg-zinc-800/80 hover:bg-red-600 text-zinc-300 hover:text-white p-2.5 rounded-full transition-colors flex items-center justify-center w-10 h-10">
+      <i class="fa-solid fa-xmark text-lg"></i>
+    </button>
+  </div>
+
+  <!-- Centro: Imagem Expandida -->
+  <div class="flex-1 w-full flex items-center justify-center overflow-hidden my-2">
+    <img id="practiceImage" src="" alt="Prática" class="max-h-full max-w-full object-contain transition-all duration-300 rounded shadow-2xl">
+  </div>
+
+  <!-- Rodapé: Controles, Temporizador e Navegação integrados -->
+  <div class="w-full max-w-xl bg-zinc-900/90 border border-zinc-800 backdrop-blur rounded-2xl px-6 py-3 flex items-center justify-between shadow-2xl">
+    <!-- Contador de Imagens -->
+    <div class="text-xs font-mono text-zinc-400 min-w-[60px]" id="practiceCounter">0 / 0</div>
+
+    <!-- Controles Centrais (Seta Anterior, Pausa/Play, Seta Próxima) -->
+    <div class="flex items-center gap-3">
+      <button onclick="prevPracticeImage()" title="Imagem Anterior" class="p-2 text-zinc-400 hover:text-white transition-colors">
+        <i class="fa-solid fa-backward-step text-base"></i>
+      </button>
+      
+      <button id="btnPausePractice" onclick="togglePausePractice()" title="Pausar/Continuar" class="w-10 h-10 rounded-full bg-amber-600 hover:bg-amber-500 text-white flex items-center justify-center transition-colors shadow-lg">
+        <i class="fa-solid fa-pause text-sm"></i>
+      </button>
+
+      <button onclick="nextPracticeImage()" title="Próxima Imagem" class="p-2 text-zinc-400 hover:text-white transition-colors">
+        <i class="fa-solid fa-forward-step text-base"></i>
+      </button>
+    </div>
+
+    <!-- Temporizador em Destaque -->
+    <div class="flex items-center gap-2 font-mono text-xl font-bold text-amber-400 min-w-[80px] justify-end">
+      <i class="fa-solid fa-clock text-xs text-amber-500/80"></i>
+      <span id="practiceTimerDisplay">00:00</span>
+    </div>
+  </div>
 </div>
 <!-- MODAL: Exportar / Importar Backup -->
 <div id="modalBackup" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
@@ -1250,10 +1269,10 @@ function makeDraggableAndResizable(elmnt, refId, initialX, initialY, initialWidt
   }
 }
 // ================= SESSÃO DE PRÁTICA TIMED (GESTURE DRAWING) =================
+// ================= SESSÃO DE PRÁTICA TIMED =================
 let practiceRestTime = 10;
 let isResting = false;
 
-// Alternar exibição do campo de tempo customizado
 function toggleCustomTimeInput() {
   const select = document.getElementById('practiceTimeSelect');
   const customInput = document.getElementById('practiceCustomTimeInput');
@@ -1264,6 +1283,213 @@ function toggleCustomTimeInput() {
     customInput.classList.add('hidden');
   }
 }
+
+function playBeep(frequency = 440, type = 'sine', duration = 0.15) {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = type;
+    osc.frequency.value = frequency;
+    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch (e) {
+    console.error("Erro de áudio:", e);
+  }
+}
+
+function openPracticeModal() {
+  const folderSelect = document.getElementById('practiceFolderSelect');
+  const tagSelect = document.getElementById('practiceTagSelect');
+  folderSelect.innerHTML = folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+  
+  const allTags = new Set();
+  references.forEach(r => { if (r.tags) r.tags.forEach(t => allTags.add(t)); });
+  tagSelect.innerHTML = Array.from(allTags).map(t => `<option value="${t}">#${t}</option>`).join('');
+  
+  togglePracticeSourceOptions();
+  toggleCustomTimeInput();
+  modalPractice.classList.replace('hidden', 'flex');
+}
+
+function togglePracticeSourceOptions() {
+  const type = document.getElementById('practiceSourceType').value;
+  document.getElementById('practiceFolderContainer').classList.toggle('hidden', type !== 'folder');
+  document.getElementById('practiceTagContainer').classList.toggle('hidden', type !== 'tag');
+}
+
+document.getElementById('practiceForm').onsubmit = (e) => {
+  e.preventDefault();
+  const sourceType = document.getElementById('practiceSourceType').value;
+  const folderVal = document.getElementById('practiceFolderSelect').value;
+  const tagVal = document.getElementById('practiceTagSelect').value;
+  const randomize = document.getElementById('practiceRandomize').checked;
+  
+  // Captura tempo customizado ou fixo
+  const timeSelectVal = document.getElementById('practiceTimeSelect').value;
+  if (timeSelectVal === 'custom') {
+    const customVal = parseInt(document.getElementById('practiceCustomTimeInput').value, 10);
+    practiceTimePerImage = (customVal && customVal > 0) ? customVal : 60;
+  } else {
+    practiceTimePerImage = parseInt(timeSelectVal, 10);
+  }
+  
+  practiceRestTime = parseInt(document.getElementById('practiceRestSelect').value, 10);
+
+  let items = [...references];
+  if (sourceType === 'folder') {
+    const validFolderIds = getFolderAndSubfolderIds(folderVal);
+    items = items.filter(r => validFolderIds.includes(r.folderId));
+  } else if (sourceType === 'tag') {
+    items = items.filter(r => r.tags && r.tags.includes(tagVal));
+  }
+
+  if (items.length === 0) {
+    alert('Nenhuma imagem encontrada com o filtro selecionado.');
+    return;
+  }
+
+  if (randomize) {
+    items.sort(() => Math.random() - 0.5);
+  }
+
+  practiceQueue = items;
+  currentPracticeIndex = 0;
+  isResting = false;
+  
+  modalPractice.classList.replace('flex', 'hidden');
+  document.getElementById('practiceView').classList.replace('hidden', 'flex');
+  loadPracticeImage();
+};
+
+function loadPracticeImage() {
+  if (practiceQueue.length === 0) return;
+  isResting = false;
+  
+  const badge = document.getElementById('practiceStatusBadge');
+  if (badge) badge.classList.add('hidden');
+
+  const currentItem = practiceQueue[currentPracticeIndex];
+  const previewImg = getPreviewImage(currentItem.url);
+  const imgEl = document.getElementById('practiceImage');
+  
+  imgEl.style.opacity = '1';
+  imgEl.src = previewImg;
+
+  document.getElementById('practiceCurrentTitle').innerText = currentItem.title || getDomainFromUrl(currentItem.url);
+  document.getElementById('practiceCounter').innerText = `${currentPracticeIndex + 1} / ${practiceQueue.length}`;
+  
+  resetPracticeTimer(practiceTimePerImage);
+}
+
+function startRestPhase() {
+  if (practiceRestTime <= 0) {
+    nextPracticeImage();
+    return;
+  }
+  
+  isResting = true;
+  const badge = document.getElementById('practiceStatusBadge');
+  if (badge) badge.classList.remove('hidden');
+
+  const imgEl = document.getElementById('practiceImage');
+  imgEl.style.opacity = '0.2'; // Reduz contraste da imagem na hora do descanso
+
+  resetPracticeTimer(practiceRestTime);
+}
+
+function resetPracticeTimer(seconds) {
+  clearInterval(practiceTimerInterval);
+  practiceSecondsLeft = seconds;
+  isPracticePaused = false;
+  updatePauseButtonUI();
+  updateTimerDisplay();
+
+  practiceTimerInterval = setInterval(() => {
+    if (!isPracticePaused) {
+      practiceSecondsLeft--;
+      updateTimerDisplay();
+
+      if (practiceSecondsLeft <= 3 && practiceSecondsLeft > 0) {
+        playBeep(520, 'sine', 0.1); 
+      }
+      
+      if (practiceSecondsLeft <= 0) {
+        playBeep(880, 'triangle', 0.25);
+        clearInterval(practiceTimerInterval);
+        
+        if (isResting) {
+          nextPracticeImage();
+        } else {
+          startRestPhase();
+        }
+      }
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const minutes = Math.floor(practiceSecondsLeft / 60);
+  const seconds = practiceSecondsLeft % 60;
+  document.getElementById('practiceTimerDisplay').innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function togglePausePractice() {
+  isPracticePaused = !isPracticePaused;
+  updatePauseButtonUI();
+}
+
+function updatePauseButtonUI() {
+  const btn = document.getElementById('btnPausePractice');
+  if (isPracticePaused) {
+    btn.innerHTML = '<i class="fa-solid fa-play text-xs ml-0.5"></i>';
+    btn.classList.replace('bg-amber-600', 'bg-emerald-600');
+    btn.classList.replace('hover:bg-amber-500', 'hover:bg-emerald-500');
+  } else {
+    btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+    btn.classList.replace('bg-emerald-600', 'bg-amber-600');
+    btn.classList.replace('hover:bg-emerald-500', 'hover:bg-amber-500');
+  }
+}
+
+function nextPracticeImage() {
+  if (currentPracticeIndex < practiceQueue.length - 1) {
+    currentPracticeIndex++;
+    loadPracticeImage();
+  } else {
+    alert('Sessão finalizada!');
+    stopPracticeSession();
+  }
+}
+
+function prevPracticeImage() {
+  if (currentPracticeIndex > 0) {
+    currentPracticeIndex--;
+    loadPracticeImage();
+  }
+}
+
+function stopPracticeSession() {
+  clearInterval(practiceTimerInterval);
+  isResting = false;
+  document.getElementById('practiceView').classList.replace('flex', 'hidden');
+}
+
+// Fechar prática ao pressionar a tecla 'ESC'
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const practiceView = document.getElementById('practiceView');
+    if (practiceView && !practiceView.classList.contains('hidden')) {
+      stopPracticeSession();
+    }
+  }
+});
 
 // Emite um aviso sonoro simples via Web Audio API (não precisa carregar arquivos externos)
 function playBeep(frequency = 440, type = 'sine', duration = 0.15) {
