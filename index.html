@@ -14,7 +14,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config = {
-  darkMode: 'class',
+  darkMode: 'class'
 }
 </script>
 <style>
@@ -29,7 +29,7 @@ tailwind.config = {
 /* Active States */
 .dark .folder-active { background-color: #27272a !important; color: #60a5fa !important; font-weight: 600; }
 .folder-active { background-color: #e4e4e7 !important; color: #2563eb !important; font-weight: 600; }
-.card-selected { ring: 2px solid #3b82f6; border-color: #3b82f6 !important; }
+.card-selected { outline: 2px solid #3b82f6; border-color: #3b82f6 !important; }
 /* Canvas Grid Background */
 .dark #moodboardCanvas {
   background-size: 20px 20px;
@@ -53,7 +53,7 @@ if ('serviceWorker' in navigator) {
 </script>
 </head>
 <body class="bg-zinc-100 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 font-sans h-screen flex flex-col overflow-hidden select-none transition-colors duration-200">
-<!-- ================= AUTH SCREEN ================= -->
+<!-- ========= AUTH SCREEN ========= -->
 <div id="authScreen" class="fixed inset-0 bg-zinc-100 dark:bg-zinc-950 z-50 flex items-center justify-center p-4">
 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden">
 <div class="text-center mb-6">
@@ -88,7 +88,7 @@ Continuar com Google
 </div>
 <div>
 <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Senha</label>
-<input type="password" id="authPassword" required placeholder="........" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+<input type="password" id="authPassword" required placeholder="••••••••" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
 </div>
 <div id="authError" class="text-red-500 text-xs text-center hidden"></div>
 <button type="submit" id="btnSubmitAuth" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-lg text-sm transition-colors mt-2">
@@ -101,11 +101,10 @@ Entrar
 </div>
 </div>
 </div>
-<!-- ================= LAYOUT PRINCIPAL EAGLE ================= -->
-<!-- BARRA SUPERIOR / TOPBAR EAGLE -->
+
+<!-- ========= LAYOUT PRINCIPAL EAGLE ================= -->
 <header class="h-12 bg-zinc-200/80 dark:bg-zinc-900 border-b border-zinc-300 dark:border-zinc-800 px-4 flex items-center justify-between shrink-0 text-xs transition-colors">
 <div class="flex items-center gap-3">
-<!-- Botão para Recolher/Mostrar Sidebar Esquerda -->
 <button id="btnToggleLeftSidebar" onclick="toggleLeftSidebar()" title="Alternar Painel de Pastas" class="px-2 py-1 rounded bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors">
 <i class="fa-solid fa-sidebar"></i>
 </button>
@@ -113,24 +112,20 @@ Entrar
 <i class="fa-solid fa-folder-closed text-blue-600 dark:text-blue-500"></i> RefHub
 </div>
 <span class="text-zinc-400 dark:text-zinc-600">|</span>
-<!-- Search Input Header -->
 <div class="relative w-48 sm:w-80">
 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs"></i>
 <input type="text" id="searchInput" placeholder="Pesquisar por título, tag, notas..." class="w-full pl-8 pr-3 py-1 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-md text-xs text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-blue-500">
 </div>
 </div>
 <div class="flex items-center gap-2 sm:gap-3">
-<!-- Botão para o Modo Prática Timed -->
 <button id="btnOpenPracticeModal" class="bg-amber-600/10 hover:bg-amber-600/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-medium px-2.5 py-1 rounded-md flex items-center gap-1.5 transition-colors">
 <i class="fa-solid fa-stopwatch"></i> <span class="hidden md:inline">Prática Timed</span>
 </button>
 <span class="text-zinc-300 dark:text-zinc-700">|</span>
-<!-- Seletor de Tema Light/Dark -->
 <button id="themeToggleBtn" title="Alternar Tema" class="px-2.5 py-1 text-xs rounded-md bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-colors">
 <i id="themeToggleIcon" class="fa-solid fa-moon"></i>
 </button>
 <span class="text-zinc-300 dark:text-zinc-700">|</span>
-<!-- Alternate View Buttons -->
 <div class="flex bg-zinc-300/60 dark:bg-zinc-950 p-0.5 rounded-md border border-zinc-300 dark:border-zinc-800">
 <button id="btnViewGrid" onclick="switchView('grid')" class="px-2.5 py-1 text-xs rounded bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 transition-all">
 <i class="fa-solid fa-border-all"></i> <span class="hidden sm:inline">Grade</span>
@@ -147,15 +142,14 @@ Entrar
 <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Adicionar</span>
 </button>
 <span class="text-zinc-300 dark:text-zinc-700">|</span>
-<!-- Botão para Recolher/Mostrar Inspector Direito -->
 <button id="btnToggleRightSidebar" onclick="toggleRightSidebar()" title="Alternar Painel de Detalhes" class="px-2 py-1 rounded bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors">
 <i class="fa-solid fa-sliders"></i>
 </button>
 </div>
 </header>
-<!-- CORPO PRINCIPAL COM 3 PAINÉIS -->
+
 <div class="flex-1 flex overflow-hidden relative">
-<!-- COLUNA 1: SIDEBAR ESQUERDA (NAVEGAÇÃO E PASTAS) -->
+<!-- COLUNA 1: SIDEBAR ESQUERDA -->
 <aside id="leftSidebar" class="w-64 bg-zinc-200/50 dark:bg-zinc-900/60 border-r border-zinc-300 dark:border-zinc-800/80 flex flex-col justify-between shrink-0 transition-all duration-200">
 <div class="p-3 flex flex-col h-full overflow-hidden">
 <div class="flex items-center justify-between mb-3 px-1">
@@ -172,21 +166,15 @@ Entrar
 </button>
 </div>
 </div>
-<nav class="space-y-0.5 overflow-y-auto flex-1 pr-1" id="foldersList">
-<!-- Renderizado via JS -->
-</nav>
-<!-- Seção de Tags -->
+<nav class="space-y-0.5 overflow-y-auto flex-1 pr-1" id="foldersList"></nav>
 <div class="pt-3 border-t border-zinc-300 dark:border-zinc-800/80 mt-2">
 <div class="flex items-center justify-between mb-2 px-1">
 <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Tags</span>
 <button id="btnClearTagFilter" onclick="filterByTag(null)" class="hidden text-[10px] text-blue-600 dark:text-blue-400 hover:underline">Limpar</button>
 </div>
-<div id="tagsListSidebar" class="flex flex-wrap gap-1 max-h-36 overflow-y-auto pr-1">
-<!-- Tags Renderizadas via JS -->
+<div id="tagsListSidebar" class="flex flex-wrap gap-1 max-h-36 overflow-y-auto pr-1"></div>
 </div>
 </div>
-</div>
-<!-- Rodapé do Usuário -->
 <div class="p-3 border-t border-zinc-300 dark:border-zinc-800/80 bg-zinc-200/80 dark:bg-zinc-900/40 flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400 transition-colors">
 <div class="flex items-center gap-2 overflow-hidden">
 <div id="userAvatar" class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0">U</div>
@@ -198,54 +186,45 @@ Entrar
 </div>
 </div>
 </aside>
-<!-- Botão Flutuante quando a Sidebar Esquerda estiver Fechada -->
+
 <button id="btnOpenLeftFloating" onclick="toggleLeftSidebar()" title="Abrir Pastas" class="hidden absolute top-3 left-3 z-30 bg-white/90 dark:bg-zinc-900/90 border border-zinc-300 dark:border-zinc-800 shadow-md p-2 rounded-lg text-xs text-zinc-700 dark:text-zinc-300 hover:text-blue-500">
 <i class="fa-solid fa-folder"></i>
 </button>
-<!-- COLUNA 2: ÁREA CENTRAL (GALERIA OU CANVAS MOODBOARD) -->
+
+<!-- COLUNA 2: ÁREA CENTRAL -->
 <main class="flex-1 bg-zinc-100 dark:bg-zinc-950 flex flex-col overflow-hidden relative transition-colors">
-<!-- Visualização Grade / Galeria -->
 <section id="mainContent" class="flex-1 overflow-y-auto p-4">
-<div id="referencesGrid" class="grid grid-cols-3 gap-4">
-<!-- Cards Renderizados em JS -->
-</div>
+<div id="referencesGrid" class="grid grid-cols-3 gap-4"></div>
 <div id="emptyState" class="hidden text-center py-24 text-zinc-400 dark:text-zinc-500">
 <i class="fa-regular fa-image text-5xl mb-3 opacity-40"></i>
 <p class="font-medium text-zinc-600 dark:text-zinc-400">Nenhum asset encontrado.</p>
 <p class="text-xs text-zinc-400 dark:text-zinc-600 mt-1">Arraste links ou clique em + Adicionar para incluir novidades.</p>
 </div>
 </section>
-<!-- Visualização Moodboard Canvas -->
 <section id="moodboardSection" class="flex-1 relative overflow-hidden bg-zinc-100 dark:bg-zinc-950 hidden">
-<div id="moodboardCanvas" class="w-full h-full relative overflow-auto p-8">
-<!-- Canvas Moodboard -->
-</div>
+<div id="moodboardCanvas" class="w-full h-full relative overflow-auto p-8"></div>
 </section>
 </main>
-<!-- COLUNA 3: PAINEL DIREITO DE INSPEÇÃO / DETALHES -->
+
+<!-- COLUNA 3: INSPECTOR -->
 <aside id="inspectorPanel" class="w-72 bg-zinc-200/60 dark:bg-zinc-900/90 border-l border-zinc-300 dark:border-zinc-800/80 flex flex-col shrink-0 overflow-y-auto transition-all duration-200">
-<!-- Cabeçalho do Inspector com opção de Fechar -->
 <div class="px-4 pt-3 flex items-center justify-between text-zinc-500 border-b border-zinc-300/50 dark:border-zinc-800/50 pb-2">
 <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Detalhes do Asset</span>
 <button onclick="toggleRightSidebar()" title="Ocultar Painel" class="hover:text-zinc-900 dark:hover:text-zinc-100 text-xs">
 <i class="fa-solid fa-xmark"></i>
 </button>
 </div>
-<!-- Estado Vazio do Inspector -->
 <div id="inspectorEmptyState" class="flex flex-col items-center justify-center h-full text-zinc-400 dark:text-zinc-600 text-center p-6">
 <i class="fa-solid fa-sliders text-4xl mb-3 opacity-40"></i>
 <p class="text-xs font-medium">Selecione uma imagem para visualizar seus detalhes e anotações.</p>
 </div>
-<!-- Conteúdo do Inspector -->
 <div id="inspectorContent" class="hidden p-4 space-y-5 text-xs">
-<!-- Preview em miniatura ampliada -->
 <div class="relative bg-white dark:bg-zinc-950 rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-800 flex items-center justify-center group shadow-sm">
 <img id="inspectorImage" src="" alt="" class="w-full h-48 object-contain">
 <button id="btnInspectorZoom" class="absolute bottom-2 right-2 bg-white/80 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 p-1.5 rounded text-xs transition-colors shadow-sm">
 <i class="fa-solid fa-expand"></i> Ampliar
 </button>
 </div>
-<!-- Título e Domínio -->
 <div>
 <h3 id="inspectorTitle" class="font-bold text-zinc-900 dark:text-zinc-100 text-sm leading-snug break-words"></h3>
 <a id="inspectorUrl" href="" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline text-[11px] truncate block mt-1">
@@ -253,7 +232,6 @@ Entrar
 </a>
 </div>
 <hr class="border-zinc-300 dark:border-zinc-800">
-<!-- Informações e Metadados -->
 <div class="space-y-2 text-zinc-500 dark:text-zinc-400">
 <div class="flex justify-between">
 <span>Adicionado em:</span>
@@ -265,20 +243,15 @@ Entrar
 </div>
 </div>
 <hr class="border-zinc-300 dark:border-zinc-800">
-<!-- Tags -->
 <div>
 <label class="block text-zinc-500 dark:text-zinc-400 font-semibold mb-1.5 uppercase text-[10px] tracking-wider">Tags</label>
-<div id="inspectorTags" class="flex flex-wrap gap-1">
-<!-- Tags renderizadas aqui -->
-</div>
+<div id="inspectorTags" class="flex flex-wrap gap-1"></div>
 </div>
 <hr class="border-zinc-300 dark:border-zinc-800">
-<!-- Anotações / Descrição -->
 <div>
 <label class="block text-zinc-500 dark:text-zinc-400 font-semibold mb-1.5 uppercase text-[10px] tracking-wider">Anotações / Descrição</label>
 <p id="inspectorNotes" class="bg-white dark:bg-zinc-950 p-2.5 rounded border border-zinc-300 dark:border-zinc-800/80 text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap min-h-[60px]"></p>
 </div>
-<!-- Ações do Asset -->
 <div class="pt-4 flex gap-2">
 <a id="btnInspectorOpen" href="" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-1.5 px-3 rounded text-center transition-colors shadow-sm">
 Acessar Link
@@ -293,8 +266,8 @@ Acessar Link
 </div>
 </aside>
 </div>
-<!-- ================= MODAIS & SESSÃO DE PRÁTICA ================= -->
-<!-- MODAL: Configurar Prática Timed -->
+
+<!-- ========= MODAIS & TIMED PRACTICE ========= -->
 <div id="modalPractice" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
 <div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl text-xs">
 <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-4">
@@ -322,7 +295,7 @@ Acessar Link
 </div>
 <div>
 <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Tempo por Imagem</label>
-<select id="practiceTimeSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+<select id="practiceTimeSelect" onchange="toggleCustomTimeInput()" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
 <option value="30">30 segundos</option>
 <option value="45">45 segundos</option>
 <option value="60" selected>1 minuto</option>
@@ -330,22 +303,20 @@ Acessar Link
 <option value="300">5 minutos</option>
 <option value="600">10 minutos</option>
 <option value="custom">Personalizado (segundos)</option>
-  </select>
-  <input type="number" id="practiceCustomTimeInput" min="5" placeholder="Digite os segundos (ex: 90)" class="hidden w-full mt-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+</select>
+<input type="number" id="practiceCustomTimeInput" min="5" placeholder="Digite os segundos (ex: 90)" class="hidden w-full mt-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
 </div>
-
-<!-- Intervalo de Descanso -->
 <div>
-  <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Intervalo entre Imagens (Troca de folha)</label>
-  <select id="practiceRestSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
-    <option value="0">Sem intervalo</option>
-    <option value="5">5 segundos</option>
-    <option value="10" selected>10 segundos</option>
-    <option value="15">15 segundos</option>
-    <option value="30">30 segundos</option>
-  </select>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Intervalo entre Imagens (Troca de folha)</label>
+<select id="practiceRestSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+<option value="0">Sem intervalo</option>
+<option value="5">5 segundos</option>
+<option value="10" selected>10 segundos</option>
+<option value="15">15 segundos</option>
+<option value="30">30 segundos</option>
+</select>
 </div>
-  <div class="flex items-center gap-2 pt-1">
+<div class="flex items-center gap-2 pt-1">
 <input type="checkbox" id="practiceRandomize" checked class="rounded bg-zinc-950 border-zinc-800 text-amber-500 focus:ring-0">
 <label for="practiceRandomize" class="text-zinc-700 dark:text-zinc-300">Embaralhar ordem (Random)</label>
 </div>
@@ -358,27 +329,27 @@ Acessar Link
 </form>
 </div>
 </div>
-<!-- TELA CHEIA: Sessão de Prática (Modo Foco / Zen) -->
+
 <div id="practiceView" class="fixed inset-0 bg-zinc-950 z-50 hidden flex-col justify-between items-center select-none overflow-hidden p-6">
-<!-- Topbar Foco -->
 <div class="w-full max-w-5xl flex items-center justify-between text-zinc-400 text-xs">
 <div class="flex items-center gap-3">
 <span id="practiceCounter" class="font-mono bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800 text-zinc-300">0/0</span>
 <span id="practiceCurrentTitle" class="truncate max-w-xs sm:max-w-md text-zinc-400"></span>
 </div>
-<!-- Cronômetro central grande com status de descanso -->
 <div class="flex flex-col items-center">
-  <span id="practiceStatusBadge" class="hidden text-[10px] uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mb-1">Descanso</span>
-  <div class="flex items-center gap-2">
-    <i class="fa-solid fa-clock text-amber-500"></i>
-    <span id="practiceTimerDisplay" class="font-mono text-2xl font-bold text-amber-400 tracking-wider">00:00</span>
-  </div>
+<span id="practiceStatusBadge" class="hidden text-[10px] uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mb-1">Descanso</span>
+<div class="flex items-center gap-2">
+<i class="fa-solid fa-clock text-amber-500"></i>
+<span id="practiceTimerDisplay" class="font-mono text-2xl font-bold text-amber-400 tracking-wider">00:00</span>
 </div>
-<!-- Área de Exibição da Imagem Principal -->
+</div>
+<div>
+<button onclick="stopPracticeSession()" class="hover:text-white transition-colors text-base"><i class="fa-solid fa-xmark"></i></button>
+</div>
+</div>
 <div class="flex-1 w-full max-w-5xl my-4 relative flex items-center justify-center overflow-hidden">
 <img id="practiceImage" src="" alt="Prática" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-opacity duration-200 opacity-100">
 </div>
-<!-- Barra de Controles Inferior -->
 <div class="w-full max-w-md bg-zinc-900/90 border border-zinc-800/80 rounded-2xl p-3 flex items-center justify-around text-zinc-300 shadow-2xl backdrop-blur-sm">
 <button onclick="prevPracticeImage()" title="Anterior (Seta Esquerda)" class="hover:text-amber-400 p-2 transition-colors">
 <i class="fa-solid fa-backward-step text-lg"></i>
@@ -391,7 +362,7 @@ Acessar Link
 </button>
 </div>
 </div>
-<!-- MODAL: Exportar / Importar Backup -->
+
 <div id="modalBackup" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
 <div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-5 text-xs">
 <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
@@ -422,7 +393,7 @@ Acessar Link
 </div>
 </div>
 </div>
-<!-- MODAL: Nova / Editar Pasta -->
+
 <div id="modalFolder" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
 <div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-sm w-full p-6 shadow-2xl text-xs">
 <h3 id="modalFolderTitle" class="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-4">Criar Pasta</h3>
@@ -443,7 +414,7 @@ Acessar Link
 </div>
 </div>
 </div>
-<!-- MODAL: Nova / Editar Referência -->
+
 <div id="modalRef" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
 <div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl text-xs">
 <h3 id="modalRefTitle" class="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-4">Adicionar Referência</h3>
@@ -476,7 +447,7 @@ Acessar Link
 </form>
 </div>
 </div>
-<!-- MODAL: Importar em Lote -->
+
 <div id="modalBatchRef" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
 <div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl text-xs">
 <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1">Adicionar Vários Links</h3>
@@ -501,12 +472,10 @@ Acessar Link
 </form>
 </div>
 </div>
-<!-- MODAL: Lightbox Imagem Ampliada -->
+
 <div id="imageViewerModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center p-4 z-50 transition-opacity" onclick="closeImageViewer()">
 <div class="relative max-w-5xl max-h-[95vh] flex flex-col items-center" onclick="event.stopPropagation()">
-<button onclick="closeImageViewer()" class="absolute -top-10 right-0 text-zinc-400 hover:text-white text-xl font-bold bg-zinc-800/80 rounded-full w-8 h-8 flex items-center justify-center">
-&times;
-</button>
+<button onclick="closeImageViewer()" class="absolute -top-10 right-0 text-zinc-400 hover:text-white text-xl font-bold bg-zinc-800/80 rounded-full w-8 h-8 flex items-center justify-center">&times;</button>
 <img id="imageViewerSrc" src="" alt="Ampliada" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain bg-zinc-950">
 <div class="flex items-center justify-between w-full mt-3 px-2 text-xs">
 <p id="imageViewerTitle" class="text-zinc-300 font-medium truncate max-w-md"></p>
@@ -516,13 +485,14 @@ Acessar Link
 </div>
 </div>
 </div>
+
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyB0TXsAPXMmt_5QI8UPY028zjXy9dYQxAQ",
+  apiKey: "AlzaSyB0TXsAPXMmt_5QI8UPY028zjXy9dYQxAQ",
   authDomain: "refhub-studio.firebaseapp.com",
   projectId: "refhub-studio",
   storageBucket: "refhub-studio.firebasestorage.app",
@@ -532,6 +502,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+
 let currentUser = null;
 let isSignUpMode = false;
 let folders = [];
@@ -540,23 +511,26 @@ let currentFolderId = 'all';
 let selectedTagFilter = null;
 let currentView = 'grid';
 let selectedRefId = null;
-// Estado de Expansão das Pastas (Accordion)
+
 let expandedFolders = new Set();
-// Estado de Visibilidade das Colunas Laterais
 let isLeftSidebarOpen = true;
 let isRightSidebarOpen = true;
-// Estado do Timed Practice
+
 let practiceQueue = [];
 let currentPracticeIndex = 0;
 let practiceTimerInterval = null;
 let practiceSecondsLeft = 0;
 let practiceTimePerImage = 60;
 let isPracticePaused = false;
+let practiceRestTime = 10;
+let isResting = false;
+
 let unsubscribeFolders = null;
 let unsubscribeReferences = null;
-// Lógica do Tema (Light / Dark)
+
 const themeToggleBtn = document.getElementById('themeToggleBtn');
 const themeToggleIcon = document.getElementById('themeToggleIcon');
+
 function initTheme() {
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light' || (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches)) {
@@ -567,6 +541,7 @@ function initTheme() {
     themeToggleIcon.className = 'fa-solid fa-moon text-blue-400';
   }
 }
+
 themeToggleBtn.onclick = () => {
   const isDark = document.documentElement.classList.toggle('dark');
   if (isDark) {
@@ -578,7 +553,7 @@ themeToggleBtn.onclick = () => {
   }
 };
 initTheme();
-// Toggle Colunas Laterais
+
 function toggleLeftSidebar() {
   const leftSidebar = document.getElementById('leftSidebar');
   const btnOpenLeftFloating = document.getElementById('btnOpenLeftFloating');
@@ -593,6 +568,7 @@ function toggleLeftSidebar() {
     btnOpenLeftFloating.classList.remove('hidden');
   }
 }
+
 function toggleRightSidebar() {
   const inspectorPanel = document.getElementById('inspectorPanel');
   isRightSidebarOpen = !isRightSidebarOpen;
@@ -604,7 +580,7 @@ function toggleRightSidebar() {
     inspectorPanel.classList.remove('w-72');
   }
 }
-// Elementos da Interface
+
 const authScreen = document.getElementById('authScreen');
 const authForm = document.getElementById('authForm');
 const authTitle = document.getElementById('authTitle');
@@ -641,7 +617,7 @@ const modalBatchRef = document.getElementById('modalBatchRef');
 const modalBackup = document.getElementById('modalBackup');
 const modalPractice = document.getElementById('modalPractice');
 const imageViewerModal = document.getElementById('imageViewerModal');
-// Modais
+
 document.getElementById('btnNewFolder').onclick = () => openFolderModal();
 document.getElementById('btnCloseFolderModal').onclick = () => modalFolder.classList.replace('flex', 'hidden');
 document.getElementById('btnCloseRefModal').onclick = () => modalRef.classList.replace('flex', 'hidden');
@@ -649,10 +625,10 @@ document.getElementById('btnBatchRef').onclick = () => modalBatchRef.classList.r
 document.getElementById('btnCloseBatchModal').onclick = () => modalBatchRef.classList.replace('flex', 'hidden');
 document.getElementById('btnOpenBackupModal').onclick = () => modalBackup.classList.replace('hidden', 'flex');
 document.getElementById('btnCloseBackupModal').onclick = () => modalBackup.classList.replace('flex', 'hidden');
-// Modal Prática Timed
 document.getElementById('btnOpenPracticeModal').onclick = () => openPracticeModal();
 document.getElementById('btnClosePracticeModal').onclick = () => modalPractice.classList.replace('flex', 'hidden');
 document.getElementById('btnCancelPractice').onclick = () => modalPractice.classList.replace('flex', 'hidden');
+
 btnToggleAuthMode.onclick = () => {
   isSignUpMode = !isSignUpMode;
   authError.classList.add('hidden');
@@ -672,6 +648,7 @@ btnToggleAuthMode.onclick = () => {
     btnToggleAuthMode.innerText = 'Cadastrar-se';
   }
 };
+
 authForm.onsubmit = async (e) => {
   e.preventDefault();
   authError.classList.add('hidden');
@@ -690,6 +667,7 @@ authForm.onsubmit = async (e) => {
     authError.classList.remove('hidden');
   }
 };
+
 btnGoogleAuth.onclick = async () => {
   try {
     await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
@@ -698,7 +676,9 @@ btnGoogleAuth.onclick = async () => {
     authError.classList.remove('hidden');
   }
 };
+
 btnLogout.onclick = () => auth.signOut();
+
 auth.onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
@@ -713,6 +693,7 @@ auth.onAuthStateChanged(user => {
     detachDatabaseListeners();
   }
 });
+
 function translateAuthError(err) {
   const code = err.code || err;
   switch (code) {
@@ -724,10 +705,12 @@ function translateAuthError(err) {
     default: return err.message || 'Erro ao autenticar.';
   }
 }
+
 function attachDatabaseListeners() {
   if (!currentUser) return;
   if (unsubscribeFolders) unsubscribeFolders();
   if (unsubscribeReferences) unsubscribeReferences();
+
   unsubscribeFolders = db.collection('folders')
     .where('userId', '==', currentUser.uid)
     .onSnapshot(snapshot => {
@@ -738,6 +721,7 @@ function attachDatabaseListeners() {
       renderFolders();
       updateFolderSelects();
     });
+
   unsubscribeReferences = db.collection('references')
     .where('userId', '==', currentUser.uid)
     .onSnapshot(snapshot => {
@@ -748,6 +732,7 @@ function attachDatabaseListeners() {
       if (selectedRefId) updateInspector(selectedRefId);
     });
 }
+
 function detachDatabaseListeners() {
   if (unsubscribeFolders) unsubscribeFolders();
   if (unsubscribeReferences) unsubscribeReferences();
@@ -758,6 +743,7 @@ function detachDatabaseListeners() {
   renderSidebarTags();
   clearInspector();
 }
+
 function switchView(view) {
   currentView = view;
   const btnGrid = document.getElementById('btnViewGrid');
@@ -775,10 +761,12 @@ function switchView(view) {
   }
   renderActiveView();
 }
+
 function renderActiveView() {
   if (currentView === 'grid') renderReferences();
   else renderMoodboard();
 }
+
 function openFolderModal(folderId = null) {
   const modalTitle = document.getElementById('modalFolderTitle');
   const input = document.getElementById('folderNameInput');
@@ -800,6 +788,7 @@ function openFolderModal(folderId = null) {
   }
   modalFolder.classList.replace('hidden', 'flex');
 }
+
 document.getElementById('btnSaveFolder').onclick = async () => {
   const input = document.getElementById('folderNameInput');
   const parentId = parentFolderSelect.value;
@@ -811,8 +800,8 @@ document.getElementById('btnSaveFolder').onclick = async () => {
     await db.collection('folders').doc(editingId).update({ name, parentId: parentValue });
   } else {
     await db.collection('folders').add({ name, parentId: parentValue, userId: currentUser.uid, createdAt: new Date() });
-    if (parentValue) expandedFolders.add(parentValue);
   }
+  if (parentValue) expandedFolders.add(parentValue);
   input.value = '';
   document.getElementById('editingFolderId').value = '';
   modalFolder.classList.replace('flex', 'hidden');
@@ -825,13 +814,16 @@ async function deleteFolder(folderId) {
     if (currentFolderId === folderId) selectFolder('all');
   }
 }
+
 function parseTags(tagString) {
   if (!tagString) return [];
   return tagString.split(',').map(t => t.trim().toLowerCase().replace(/^#/, '')).filter(t => t.length > 0);
 }
+
 function getDomainFromUrl(url) {
   try { return new URL(url).hostname.replace('www.', ''); } catch (e) { return url; }
 }
+
 function getPreviewImage(url) {
   try {
     if (url.includes('i.pinimg.com')) return url.replace(/\/236x\/|\/474x\//, '/736x/');
@@ -842,7 +834,6 @@ function getPreviewImage(url) {
   }
 }
 
-// LÓGICA DE ABRIR E SALVAR O MODAL DE REFERÊNCIA (ADICIONAR E EDITAR)
 function openRefModal(refId = null) {
   const modalTitle = document.getElementById('modalRefTitle');
   const editingId = document.getElementById('editingRefId');
@@ -850,9 +841,7 @@ function openRefModal(refId = null) {
   const titleInput = document.getElementById('refTitle');
   const tagsInput = document.getElementById('refTags');
   const notesInput = document.getElementById('refNotes');
-  
   updateFolderSelects();
-  
   if (refId) {
     const item = references.find(r => r.id === refId);
     if (item) {
@@ -870,21 +859,18 @@ function openRefModal(refId = null) {
     document.getElementById('refForm').reset();
     refFolderSelect.value = currentFolderId !== 'all' ? currentFolderId : 'all';
   }
-  
   modalRef.classList.replace('hidden', 'flex');
 }
 
 document.getElementById('refForm').onsubmit = async (e) => {
   e.preventDefault();
   if (!currentUser) return;
-  
   const editingId = document.getElementById('editingRefId').value;
   const url = document.getElementById('refUrl').value.trim();
   let title = document.getElementById('refTitle').value.trim() || getDomainFromUrl(url);
   const rawTags = document.getElementById('refTags').value;
   const folderId = refFolderSelect.value;
   const notes = document.getElementById('refNotes').value;
-  
   const dataPayload = {
     title,
     url,
@@ -892,7 +878,6 @@ document.getElementById('refForm').onsubmit = async (e) => {
     notes,
     tags: parseTags(rawTags)
   };
-  
   if (editingId) {
     await db.collection('references').doc(editingId).update(dataPayload);
   } else {
@@ -902,7 +887,6 @@ document.getElementById('refForm').onsubmit = async (e) => {
       createdAt: new Date()
     });
   }
-  
   e.target.reset();
   document.getElementById('editingRefId').value = '';
   modalRef.classList.replace('flex', 'hidden');
@@ -945,11 +929,13 @@ async function deleteRef(id) {
     if (selectedRefId === id) clearInspector();
   }
 }
+
 function selectFolder(id) {
   currentFolderId = id;
   renderFolders();
   renderActiveView();
 }
+
 function toggleFolderExpand(folderId, event) {
   if (event) event.stopPropagation();
   if (expandedFolders.has(folderId)) {
@@ -959,6 +945,7 @@ function toggleFolderExpand(folderId, event) {
   }
   renderFolders();
 }
+
 function toggleExpandAllFolders() {
   const hasSubfolders = folders.some(f => folders.some(c => c.parentId === f.id));
   if (!hasSubfolders) return;
@@ -971,22 +958,26 @@ function toggleExpandAllFolders() {
   }
   renderFolders();
 }
+
 function openImageViewer(imgUrl, title) {
   document.getElementById('imageViewerSrc').src = imgUrl;
   document.getElementById('imageViewerTitle').innerText = title;
   document.getElementById('imageViewerDownload').href = imgUrl;
   imageViewerModal.classList.replace('hidden', 'flex');
 }
+
 function closeImageViewer() {
   imageViewerModal.classList.replace('flex', 'hidden');
   document.getElementById('imageViewerSrc').src = '';
 }
+
 function getFolderAndSubfolderIds(folderId) {
   let ids = [folderId];
   const children = folders.filter(f => f.parentId === folderId);
   children.forEach(child => { ids = ids.concat(getFolderAndSubfolderIds(child.id)); });
   return ids;
 }
+
 function renderSidebarTags() {
   const tagCounts = {};
   references.forEach(r => {
@@ -1015,11 +1006,13 @@ function renderSidebarTags() {
     `;
   }).join('');
 }
+
 function filterByTag(tag) {
   selectedTagFilter = (selectedTagFilter === tag) ? null : tag;
   renderSidebarTags();
   renderActiveView();
 }
+
 function getFilteredReferences() {
   const query = searchInput.value.toLowerCase().replace(/^#/, '');
   const validFolderIds = currentFolderId === 'all' ? null : getFolderAndSubfolderIds(currentFolderId);
@@ -1033,15 +1026,17 @@ function getFilteredReferences() {
     return matchesFolder && matchesSearch && matchesTagFilter;
   });
 }
+
 function renderFolders() {
   const allCount = references.length;
   let html = `
     <button onclick="selectFolder('all')" class="${currentFolderId === 'all' ? 'folder-active' : 'text-zinc-700 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-300/50 dark:hover:bg-zinc-800/50'} w-full text-left px-2.5 py-1.5 rounded-md flex items-center justify-between text-xs transition-colors">
-    <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group text-blue-500"></i> Todos os Assets</span>
-    <span class="text-[10px] bg-zinc-300/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-1.5 py-0.5 rounded">${allCount}</span>
+      <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group text-blue-500"></i> Todos os Assets</span>
+      <span class="text-[10px] bg-zinc-300/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-1.5 py-0.5 rounded">${allCount}</span>
     </button>
   `;
   const rootFolders = folders.filter(f => !f.parentId);
+
   function buildFolderTree(folderList, level = 0) {
     folderList.forEach(f => {
       const subfolderIds = getFolderAndSubfolderIds(f.id);
@@ -1055,24 +1050,25 @@ function renderFolders() {
         ? `<span onclick="toggleFolderExpand('${f.id}', event)" class="p-1 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer text-[10px] flex items-center justify-center transition-transform ${isExpanded ? 'rotate-90' : ''}"><i class="fa-solid fa-chevron-right text-zinc-400 dark:text-zinc-500"></i></span>`
         : '<span class="w-4 h-4 inline-block"></span>';
       const folderIconClass = isExpanded && hasChildren ? 'fa-folder-open text-amber-500' : 'fa-folder text-amber-500';
+
       html += `
         <div class="relative flex items-center group rounded-md ${isActive ? 'folder-active' : 'text-zinc-700 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-300/50 dark:hover:bg-zinc-800/50'}">
-        <button onclick="selectFolder('${f.id}')" style="padding-left: ${paddingLeft}px" class="w-full text-left py-1.5 pr-14 rounded-md flex items-center justify-between text-xs transition-colors">
-        <span class="flex items-center gap-1.5 truncate">
-        ${chevronIcon}
-        <i class="fa-solid ${folderIconClass} text-xs" onclick="toggleFolderExpand('${f.id}', event)"></i>
-        <span class="truncate">${f.name}</span>
-        </span>
-        <span class="text-[10px] bg-zinc-300/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-1.5 py-0.5 rounded ml-1">${count}</span>
-        </button>
-        <div class="opacity-0 group-hover:opacity-100 absolute right-1 flex items-center gap-1 transition-opacity bg-zinc-200 dark:bg-zinc-900 px-1 rounded">
-        <button onclick="event.stopPropagation(); openFolderModal('${f.id}')" title="Editar" class="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-[10px] p-0.5">
-        <i class="fa-solid fa-pen"></i>
-        </button>
-        <button onclick="event.stopPropagation(); deleteFolder('${f.id}')" title="Excluir" class="text-zinc-500 hover:text-red-600 dark:hover:text-red-400 text-[10px] p-0.5">
-        <i class="fa-solid fa-trash"></i>
-        </button>
-        </div>
+          <button onclick="selectFolder('${f.id}')" style="padding-left: ${paddingLeft}px" class="w-full text-left py-1.5 pr-14 rounded-md flex items-center justify-between text-xs transition-colors">
+            <span class="flex items-center gap-1.5 truncate">
+              ${chevronIcon}
+              <i class="fa-solid ${folderIconClass} text-xs" onclick="toggleFolderExpand('${f.id}', event)"></i>
+              <span class="truncate">${f.name}</span>
+            </span>
+            <span class="text-[10px] bg-zinc-300/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-1.5 py-0.5 rounded ml-1">${count}</span>
+          </button>
+          <div class="opacity-0 group-hover:opacity-100 absolute right-1 flex items-center gap-1 transition-opacity bg-zinc-200 dark:bg-zinc-900 px-1 rounded">
+            <button onclick="event.stopPropagation(); openFolderModal('${f.id}')" title="Editar" class="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-[10px] p-0.5">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button onclick="event.stopPropagation(); deleteFolder('${f.id}')" title="Excluir" class="text-zinc-500 hover:text-red-600 dark:hover:text-red-400 text-[10px] p-0.5">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
         </div>
       `;
       if (hasChildren && isExpanded) {
@@ -1083,6 +1079,7 @@ function renderFolders() {
   buildFolderTree(rootFolders);
   foldersList.innerHTML = html;
 }
+
 function updateFolderSelects(currentEditingId = null) {
   parentFolderSelect.innerHTML = '<option value="root">Nenhuma (Pasta Raiz)</option>';
   refFolderSelect.innerHTML = '<option value="all">Geral (Sem pasta)</option>';
@@ -1091,12 +1088,12 @@ function updateFolderSelects(currentEditingId = null) {
     if (f.id !== currentEditingId) {
       const prefix = f.parentId ? '-' : '';
       parentFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
+      refFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
+      batchFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
     }
-    const prefix = f.parentId ? '-' : '';
-    refFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
-    batchFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
   });
 }
+
 function selectReference(id) {
   selectedRefId = id;
   document.querySelectorAll('.ref-card').forEach(el => el.classList.remove('card-selected'));
@@ -1107,6 +1104,7 @@ function selectReference(id) {
     toggleRightSidebar();
   }
 }
+
 function updateInspector(id) {
   const item = references.find(r => r.id === id);
   if (!item) {
@@ -1118,6 +1116,7 @@ function updateInspector(id) {
   const folderObj = folders.find(f => f.id === item.folderId);
   const folderName = folderObj ? folderObj.name : 'Geral';
   const dateStr = item.createdAt ? new Date(item.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : '-';
+
   document.getElementById('inspectorImage').src = previewImg;
   document.getElementById('inspectorTitle').innerText = item.title || domain;
   document.getElementById('inspectorUrl').href = item.url;
@@ -1125,24 +1124,29 @@ function updateInspector(id) {
   document.getElementById('inspectorDate').innerText = dateStr;
   document.getElementById('inspectorFolder').innerText = folderName;
   document.getElementById('inspectorNotes').innerText = item.notes || 'Nenhuma anotação adicionada.';
+
   const tagsContainer = document.getElementById('inspectorTags');
   if (item.tags && item.tags.length > 0) {
     tagsContainer.innerHTML = item.tags.map(t => `<span class="bg-zinc-300/60 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-300 text-[10px] px-2 py-0.5 rounded">#${t}</span>`).join('');
   } else {
     tagsContainer.innerHTML = '<span class="text-zinc-400 dark:text-zinc-600 text-[10px]">Sem tags</span>';
   }
+
   document.getElementById('btnInspectorOpen').href = item.url;
   document.getElementById('btnInspectorZoom').onclick = () => openImageViewer(previewImg, item.title || domain);
   document.getElementById('btnInspectorEdit').onclick = () => openRefModal(item.id);
   document.getElementById('btnInspectorDelete').onclick = () => deleteRef(item.id);
+
   inspectorEmptyState.classList.add('hidden');
   inspectorContent.classList.remove('hidden');
 }
+
 function clearInspector() {
   selectedRefId = null;
   inspectorContent.classList.add('hidden');
   inspectorEmptyState.classList.remove('hidden');
 }
+
 function renderReferences() {
   const filtered = getFilteredReferences();
   if (filtered.length === 0) {
@@ -1159,27 +1163,28 @@ function renderReferences() {
     return `
       <div id="ref-card-${r.id}" onclick="selectReference('${r.id}')"
       class="ref-card bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden hover:border-zinc-400 dark:hover:border-zinc-700 transition-all cursor-pointer group flex flex-col justify-between shadow-sm ${isSelected ? 'card-selected' : ''}">
-      <div>
-      <div class="h-36 bg-zinc-100 dark:bg-zinc-950 relative overflow-hidden flex items-center justify-center border-b border-zinc-200 dark:border-zinc-800/60">
-      <img src="${previewImg}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-regular fa-image text-zinc-400 dark:text-zinc-700 text-2xl\\'></i>';">
-      </div>
-      <div class="p-2.5">
-      <h4 class="font-medium text-zinc-800 dark:text-zinc-200 text-xs line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${r.title || domain}</h4>
-      <p class="text-[10px] text-zinc-400 dark:text-zinc-500 truncate mt-0.5">${domain}</p>
-      </div>
-      </div>
+        <div>
+          <div class="h-36 bg-zinc-100 dark:bg-zinc-950 relative overflow-hidden flex items-center justify-center border-b border-zinc-200 dark:border-zinc-800/60">
+            <img src="${previewImg}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-regular fa-image text-zinc-400 dark:text-zinc-700 text-2xl\\'></i>';">
+          </div>
+          <div class="p-2.5">
+            <h4 class="font-medium text-zinc-800 dark:text-zinc-200 text-xs line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${r.title || domain}</h4>
+            <p class="text-[10px] text-zinc-400 dark:text-zinc-500 truncate mt-0.5">${domain}</p>
+          </div>
+        </div>
       </div>
     `;
   }).join('');
 }
+
 function renderMoodboard() {
   const filtered = getFilteredReferences();
   moodboardCanvas.innerHTML = '';
   if (filtered.length === 0) {
     moodboardCanvas.innerHTML = `
       <div class="flex flex-col items-center justify-center h-full text-center text-zinc-400 dark:text-zinc-600">
-      <i class="fa-solid fa-cubes text-5xl mb-3 opacity-30"></i>
-      <p class="font-medium text-zinc-600 dark:text-zinc-400 text-xs">Moodboard Vazio</p>
+        <i class="fa-solid fa-cubes text-5xl mb-3 opacity-30"></i>
+        <p class="font-medium text-zinc-600 dark:text-zinc-400 text-xs">Moodboard Vazio</p>
       </div>
     `;
     return;
@@ -1197,13 +1202,13 @@ function renderMoodboard() {
     card.style.width = `${width}px`;
     card.innerHTML = `
       <div class="relative bg-zinc-100 dark:bg-zinc-950">
-      <img src="${previewImg}" class="w-full h-auto object-cover max-h-80 pointer-events-none" onerror="this.src='https://placehold.co/300x200/e4e4e7/71717a?text=Preview'">
-      <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-      <button onclick="openImageViewer('${previewImg}', '${(r.title || '').replace(/'/g, "\\'")}')" class="bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 p-1 rounded text-[10px] shadow-sm"><i class="fa-solid fa-expand"></i></button>
-      </div>
+        <img src="${previewImg}" class="w-full h-auto object-cover max-h-80 pointer-events-none" onerror="this.src='https://placehold.co/300x200/e4e4e7/71717a?text=Preview'">
+        <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onclick="openImageViewer('${previewImg}', '${(r.title || '').replace(/'/g, "\\'")}')" class="bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 p-1 rounded text-[10px] shadow-sm"><i class="fa-solid fa-expand"></i></button>
+        </div>
       </div>
       <div class="p-2">
-      <p class="text-xs font-medium text-zinc-800 dark:text-zinc-300 truncate">${r.title}</p>
+        <p class="text-xs font-medium text-zinc-800 dark:text-zinc-300 truncate">${r.title || ''}</p>
       </div>
     `;
     card.onclick = () => selectReference(r.id);
@@ -1211,11 +1216,13 @@ function renderMoodboard() {
     moodboardCanvas.appendChild(card);
   });
 }
+
 function makeDraggableAndResizable(elmnt, refId, initialX, initialY, initialWidth) {
   let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
   let currentX = initialX;
   let currentY = initialY;
   elmnt.onmousedown = dragMouseDown;
+
   function dragMouseDown(e) {
     if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.tagName === 'I') return;
     e.preventDefault();
@@ -1225,6 +1232,7 @@ function makeDraggableAndResizable(elmnt, refId, initialX, initialY, initialWidt
     document.onmouseup = closeDragElement;
     document.onmousemove = elementDrag;
   }
+
   function elementDrag(e) {
     e.preventDefault();
     pos1 = pos3 - e.clientX;
@@ -1236,6 +1244,7 @@ function makeDraggableAndResizable(elmnt, refId, initialX, initialY, initialWidt
     elmnt.style.top = currentY + "px";
     elmnt.style.left = currentX + "px";
   }
+
   async function closeDragElement() {
     document.onmouseup = null;
     document.onmousemove = null;
@@ -1249,11 +1258,8 @@ function makeDraggableAndResizable(elmnt, refId, initialX, initialY, initialWidt
     }
   }
 }
-// ================= SESSÃO DE PRÁTICA TIMED (GESTURE DRAWING) =================
-let practiceRestTime = 10;
-let isResting = false;
 
-// Alternar exibição do campo de tempo customizado
+/* SESSÃO DE PRÁTICA TIMED (GESTURE DRAWING) */
 function toggleCustomTimeInput() {
   const select = document.getElementById('practiceTimeSelect');
   const customInput = document.getElementById('practiceCustomTimeInput');
@@ -1265,20 +1271,16 @@ function toggleCustomTimeInput() {
   }
 }
 
-// Emite um aviso sonoro simples via Web Audio API (não precisa carregar arquivos externos)
 function playBeep(frequency = 440, type = 'sine', duration = 0.15) {
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    
     osc.type = type;
     osc.frequency.value = frequency;
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime); // Volume suave
-    
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
-    
     osc.start();
     osc.stop(audioCtx.currentTime + duration);
   } catch (e) {
@@ -1290,11 +1292,9 @@ function openPracticeModal() {
   const folderSelect = document.getElementById('practiceFolderSelect');
   const tagSelect = document.getElementById('practiceTagSelect');
   folderSelect.innerHTML = folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
-  
   const allTags = new Set();
   references.forEach(r => { if (r.tags) r.tags.forEach(t => allTags.add(t)); });
   tagSelect.innerHTML = Array.from(allTags).map(t => `<option value="${t}">#${t}</option>`).join('');
-  
   togglePracticeSourceOptions();
   toggleCustomTimeInput();
   modalPractice.classList.replace('hidden', 'flex');
@@ -1314,8 +1314,7 @@ document.getElementById('practiceForm').onsubmit = (e) => {
   const folderVal = document.getElementById('practiceFolderSelect').value;
   const tagVal = document.getElementById('practiceTagSelect').value;
   const randomize = document.getElementById('practiceRandomize').checked;
-  
-  // Leitura do Tempo de Desenho (Trata opção customizada)
+
   const timeSelectVal = document.getElementById('practiceTimeSelect').value;
   if (timeSelectVal === 'custom') {
     const customVal = parseInt(document.getElementById('practiceCustomTimeInput').value, 10);
@@ -1323,8 +1322,7 @@ document.getElementById('practiceForm').onsubmit = (e) => {
   } else {
     practiceTimePerImage = parseInt(timeSelectVal, 10);
   }
-  
-  // Leitura do Tempo de Descanso
+
   practiceRestTime = parseInt(document.getElementById('practiceRestSelect').value, 10);
 
   let items = [...references];
@@ -1347,7 +1345,7 @@ document.getElementById('practiceForm').onsubmit = (e) => {
   practiceQueue = items;
   currentPracticeIndex = 0;
   isResting = false;
-  
+
   modalPractice.classList.replace('flex', 'hidden');
   document.getElementById('practiceView').classList.replace('hidden', 'flex');
   loadPracticeImage();
@@ -1356,23 +1354,18 @@ document.getElementById('practiceForm').onsubmit = (e) => {
 function loadPracticeImage() {
   if (practiceQueue.length === 0) return;
   isResting = false;
-  
   const badge = document.getElementById('practiceStatusBadge');
   if (badge) badge.classList.add('hidden');
-
   const currentItem = practiceQueue[currentPracticeIndex];
   const previewImg = getPreviewImage(currentItem.url);
   const imgEl = document.getElementById('practiceImage');
-  
   imgEl.style.opacity = '0';
   setTimeout(() => {
     imgEl.src = previewImg;
     imgEl.style.opacity = '1';
   }, 150);
-
   document.getElementById('practiceCurrentTitle').innerText = currentItem.title || getDomainFromUrl(currentItem.url);
   document.getElementById('practiceCounter').innerText = `${currentPracticeIndex + 1} / ${practiceQueue.length}`;
-  
   resetPracticeTimer(practiceTimePerImage);
 }
 
@@ -1381,15 +1374,12 @@ function startRestPhase() {
     nextPracticeImage();
     return;
   }
-  
   isResting = true;
   const badge = document.getElementById('practiceStatusBadge');
   if (badge) badge.classList.remove('hidden');
-
   const imgEl = document.getElementById('practiceImage');
-  imgEl.style.opacity = '0.15'; // Desfoca/Suaviza a imagem durante a pausa
+  imgEl.style.opacity = '0.15';
   document.getElementById('practiceCurrentTitle').innerText = "Pausa / Troca de Folha";
-
   resetPracticeTimer(practiceRestTime);
 }
 
@@ -1399,23 +1389,16 @@ function resetPracticeTimer(seconds) {
   isPracticePaused = false;
   updatePauseButtonUI();
   updateTimerDisplay();
-
   practiceTimerInterval = setInterval(() => {
     if (!isPracticePaused) {
       practiceSecondsLeft--;
       updateTimerDisplay();
-
-      // Sons de Aviso:
-      // Toca bipe curto nos últimos 3 segundos
       if (practiceSecondsLeft <= 3 && practiceSecondsLeft > 0) {
-        playBeep(440, 'sine', 0.1); 
+        playBeep(440, 'sine', 0.1);
       }
-      
-      // Toca tom de transição ao chegar a zero
       if (practiceSecondsLeft <= 0) {
         playBeep(880, 'triangle', 0.3);
         clearInterval(practiceTimerInterval);
-        
         if (isResting) {
           nextPracticeImage();
         } else {
@@ -1473,7 +1456,6 @@ function stopPracticeSession() {
   document.getElementById('practiceView').classList.replace('flex', 'hidden');
 }
 
-// Atalhos de Teclado no Modo Prática
 window.addEventListener('keydown', (e) => {
   const practiceView = document.getElementById('practiceView');
   if (!practiceView.classList.contains('hidden')) {
@@ -1489,7 +1471,7 @@ window.addEventListener('keydown', (e) => {
     }
   }
 });
-// Exportação & Importação
+
 function downloadFile(content, fileName, mimeType) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -1501,10 +1483,12 @@ function downloadFile(content, fileName, mimeType) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
 document.getElementById('btnExportJSON').onclick = () => {
   const data = { folders, references, exportedAt: new Date().toISOString() };
   downloadFile(JSON.stringify(data, null, 2), `refhub-backup-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
 };
+
 document.getElementById('btnExportCSV').onclick = () => {
   if (references.length === 0) return alert('Nenhuma referência para exportar.');
   const folderMap = {};
@@ -1515,9 +1499,12 @@ document.getElementById('btnExportCSV').onclick = () => {
   });
   downloadFile(csvContent, `refhub-export-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
 };
+
 const btnTriggerImport = document.getElementById('btnTriggerImport');
 const importJsonInput = document.getElementById('importJsonInput');
+
 btnTriggerImport.onclick = () => importJsonInput.click();
+
 importJsonInput.onchange = async (e) => {
   const file = e.target.files[0];
   if (!file || !currentUser) return;
@@ -1533,7 +1520,12 @@ importJsonInput.onchange = async (e) => {
         importedData.folders.forEach(f => {
           const newDocRef = db.collection('folders').doc();
           folderIdMap[f.id] = newDocRef.id;
-          batch.set(newDocRef, { name: f.name, parentId: f.parentId ? (folderIdMap[f.parentId] || null) : null, userId: currentUser.uid, createdAt: new Date() });
+          batch.set(newDocRef, {
+            name: f.name,
+            parentId: f.parentId ? (folderIdMap[f.parentId] || null) : null,
+            userId: currentUser.uid,
+            createdAt: new Date()
+          });
         });
       }
       if (importedData.references) {
@@ -1563,6 +1555,7 @@ importJsonInput.onchange = async (e) => {
   };
   reader.readAsText(file);
 };
+
 searchInput.addEventListener('input', renderActiveView);
 </script>
 </body>
