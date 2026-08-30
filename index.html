@@ -329,23 +329,9 @@ Acessar Link
 <option value="120">2 minutos</option>
 <option value="300">5 minutos</option>
 <option value="600">10 minutos</option>
-<option value="custom">Personalizado (segundos)</option>
-  </select>
-  <input type="number" id="practiceCustomTimeInput" min="5" placeholder="Digite os segundos (ex: 90)" class="hidden w-full mt-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+</select>
 </div>
-
-<!-- Intervalo de Descanso -->
-<div>
-  <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Intervalo entre Imagens (Troca de folha)</label>
-  <select id="practiceRestSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
-    <option value="0">Sem intervalo</option>
-    <option value="5">5 segundos</option>
-    <option value="10" selected>10 segundos</option>
-    <option value="15">15 segundos</option>
-    <option value="30">30 segundos</option>
-  </select>
-</div>
-  <div class="flex items-center gap-2 pt-1">
+<div class="flex items-center gap-2 pt-1">
 <input type="checkbox" id="practiceRandomize" checked class="rounded bg-zinc-950 border-zinc-800 text-amber-500 focus:ring-0">
 <label for="practiceRandomize" class="text-zinc-700 dark:text-zinc-300">Embaralhar ordem (Random)</label>
 </div>
@@ -366,13 +352,14 @@ Acessar Link
 <span id="practiceCounter" class="font-mono bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800 text-zinc-300">0/0</span>
 <span id="practiceCurrentTitle" class="truncate max-w-xs sm:max-w-md text-zinc-400"></span>
 </div>
-<!-- Cronômetro central grande com status de descanso -->
-<div class="flex flex-col items-center">
-  <span id="practiceStatusBadge" class="hidden text-[10px] uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mb-1">Descanso</span>
-  <div class="flex items-center gap-2">
-    <i class="fa-solid fa-clock text-amber-500"></i>
-    <span id="practiceTimerDisplay" class="font-mono text-2xl font-bold text-amber-400 tracking-wider">00:00</span>
-  </div>
+<!-- Cronômetro central grande -->
+<div class="flex items-center gap-2">
+<i class="fa-solid fa-clock text-amber-500"></i>
+<span id="practiceTimerDisplay" class="font-mono text-2xl font-bold text-amber-400 tracking-wider">00:00</span>
+</div>
+<button onclick="stopPracticeSession()" title="Sair da Prática (ESC)" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg border border-zinc-800 flex items-center gap-1.5 transition-colors">
+<i class="fa-solid fa-xmark"></i> Fechar
+</button>
 </div>
 <!-- Área de Exibição da Imagem Principal -->
 <div class="flex-1 w-full max-w-5xl my-4 relative flex items-center justify-center overflow-hidden">
@@ -1250,56 +1237,16 @@ function makeDraggableAndResizable(elmnt, refId, initialX, initialY, initialWidt
   }
 }
 // ================= SESSÃO DE PRÁTICA TIMED (GESTURE DRAWING) =================
-let practiceRestTime = 10;
-let isResting = false;
-
-// Alternar exibição do campo de tempo customizado
-function toggleCustomTimeInput() {
-  const select = document.getElementById('practiceTimeSelect');
-  const customInput = document.getElementById('practiceCustomTimeInput');
-  if (select.value === 'custom') {
-    customInput.classList.remove('hidden');
-    customInput.focus();
-  } else {
-    customInput.classList.add('hidden');
-  }
-}
-
-// Emite um aviso sonoro simples via Web Audio API (não precisa carregar arquivos externos)
-function playBeep(frequency = 440, type = 'sine', duration = 0.15) {
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    
-    osc.type = type;
-    osc.frequency.value = frequency;
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime); // Volume suave
-    
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch (e) {
-    console.error("Audio API não suportada", e);
-  }
-}
-
 function openPracticeModal() {
   const folderSelect = document.getElementById('practiceFolderSelect');
   const tagSelect = document.getElementById('practiceTagSelect');
   folderSelect.innerHTML = folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
-  
   const allTags = new Set();
   references.forEach(r => { if (r.tags) r.tags.forEach(t => allTags.add(t)); });
   tagSelect.innerHTML = Array.from(allTags).map(t => `<option value="${t}">#${t}</option>`).join('');
-  
   togglePracticeSourceOptions();
-  toggleCustomTimeInput();
   modalPractice.classList.replace('hidden', 'flex');
 }
-
 function togglePracticeSourceOptions() {
   const type = document.getElementById('practiceSourceType').value;
   const folderContainer = document.getElementById('practiceFolderContainer');
@@ -1307,26 +1254,13 @@ function togglePracticeSourceOptions() {
   folderContainer.classList.toggle('hidden', type !== 'folder');
   tagContainer.classList.toggle('hidden', type !== 'tag');
 }
-
 document.getElementById('practiceForm').onsubmit = (e) => {
   e.preventDefault();
   const sourceType = document.getElementById('practiceSourceType').value;
   const folderVal = document.getElementById('practiceFolderSelect').value;
   const tagVal = document.getElementById('practiceTagSelect').value;
   const randomize = document.getElementById('practiceRandomize').checked;
-  
-  // Leitura do Tempo de Desenho (Trata opção customizada)
-  const timeSelectVal = document.getElementById('practiceTimeSelect').value;
-  if (timeSelectVal === 'custom') {
-    const customVal = parseInt(document.getElementById('practiceCustomTimeInput').value, 10);
-    practiceTimePerImage = (customVal && customVal > 0) ? customVal : 60;
-  } else {
-    practiceTimePerImage = parseInt(timeSelectVal, 10);
-  }
-  
-  // Leitura do Tempo de Descanso
-  practiceRestTime = parseInt(document.getElementById('practiceRestSelect').value, 10);
-
+  practiceTimePerImage = parseInt(document.getElementById('practiceTimeSelect').value, 10);
   let items = [...references];
   if (sourceType === 'folder') {
     const validFolderIds = getFolderAndSubfolderIds(folderVal);
@@ -1334,109 +1268,58 @@ document.getElementById('practiceForm').onsubmit = (e) => {
   } else if (sourceType === 'tag') {
     items = items.filter(r => r.tags && r.tags.includes(tagVal));
   }
-
   if (items.length === 0) {
     alert('Nenhuma imagem encontrada com o filtro selecionado.');
     return;
   }
-
   if (randomize) {
     items.sort(() => Math.random() - 0.5);
   }
-
   practiceQueue = items;
   currentPracticeIndex = 0;
-  isResting = false;
-  
   modalPractice.classList.replace('flex', 'hidden');
   document.getElementById('practiceView').classList.replace('hidden', 'flex');
   loadPracticeImage();
 };
-
 function loadPracticeImage() {
   if (practiceQueue.length === 0) return;
-  isResting = false;
-  
-  const badge = document.getElementById('practiceStatusBadge');
-  if (badge) badge.classList.add('hidden');
-
   const currentItem = practiceQueue[currentPracticeIndex];
   const previewImg = getPreviewImage(currentItem.url);
   const imgEl = document.getElementById('practiceImage');
-  
   imgEl.style.opacity = '0';
   setTimeout(() => {
     imgEl.src = previewImg;
     imgEl.style.opacity = '1';
   }, 150);
-
   document.getElementById('practiceCurrentTitle').innerText = currentItem.title || getDomainFromUrl(currentItem.url);
   document.getElementById('practiceCounter').innerText = `${currentPracticeIndex + 1} / ${practiceQueue.length}`;
-  
-  resetPracticeTimer(practiceTimePerImage);
+  resetPracticeTimer();
 }
-
-function startRestPhase() {
-  if (practiceRestTime <= 0) {
-    nextPracticeImage();
-    return;
-  }
-  
-  isResting = true;
-  const badge = document.getElementById('practiceStatusBadge');
-  if (badge) badge.classList.remove('hidden');
-
-  const imgEl = document.getElementById('practiceImage');
-  imgEl.style.opacity = '0.15'; // Desfoca/Suaviza a imagem durante a pausa
-  document.getElementById('practiceCurrentTitle').innerText = "Pausa / Troca de Folha";
-
-  resetPracticeTimer(practiceRestTime);
-}
-
-function resetPracticeTimer(seconds) {
+function resetPracticeTimer() {
   clearInterval(practiceTimerInterval);
-  practiceSecondsLeft = seconds;
+  practiceSecondsLeft = practiceTimePerImage;
   isPracticePaused = false;
   updatePauseButtonUI();
   updateTimerDisplay();
-
   practiceTimerInterval = setInterval(() => {
     if (!isPracticePaused) {
       practiceSecondsLeft--;
       updateTimerDisplay();
-
-      // Sons de Aviso:
-      // Toca bipe curto nos últimos 3 segundos
-      if (practiceSecondsLeft <= 3 && practiceSecondsLeft > 0) {
-        playBeep(440, 'sine', 0.1); 
-      }
-      
-      // Toca tom de transição ao chegar a zero
       if (practiceSecondsLeft <= 0) {
-        playBeep(880, 'triangle', 0.3);
-        clearInterval(practiceTimerInterval);
-        
-        if (isResting) {
-          nextPracticeImage();
-        } else {
-          startRestPhase();
-        }
+        nextPracticeImage();
       }
     }
   }, 1000);
 }
-
 function updateTimerDisplay() {
   const minutes = Math.floor(practiceSecondsLeft / 60);
   const seconds = practiceSecondsLeft % 60;
   document.getElementById('practiceTimerDisplay').innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
-
 function togglePausePractice() {
   isPracticePaused = !isPracticePaused;
   updatePauseButtonUI();
 }
-
 function updatePauseButtonUI() {
   const btn = document.getElementById('btnPausePractice');
   if (isPracticePaused) {
@@ -1449,7 +1332,6 @@ function updatePauseButtonUI() {
     btn.classList.replace('hover:bg-emerald-500', 'hover:bg-amber-500');
   }
 }
-
 function nextPracticeImage() {
   if (currentPracticeIndex < practiceQueue.length - 1) {
     currentPracticeIndex++;
@@ -1459,20 +1341,16 @@ function nextPracticeImage() {
     stopPracticeSession();
   }
 }
-
 function prevPracticeImage() {
   if (currentPracticeIndex > 0) {
     currentPracticeIndex--;
     loadPracticeImage();
   }
 }
-
 function stopPracticeSession() {
   clearInterval(practiceTimerInterval);
-  isResting = false;
   document.getElementById('practiceView').classList.replace('flex', 'hidden');
 }
-
 // Atalhos de Teclado no Modo Prática
 window.addEventListener('keydown', (e) => {
   const practiceView = document.getElementById('practiceView');
