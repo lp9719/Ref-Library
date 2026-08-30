@@ -1710,38 +1710,79 @@
     }
 
     // 2. Salva as edições do título, tags e anotações
-    function saveRefEdits(event) {
-      event.preventDefault();
-      
-      const id = document.getElementById('editRefId').value;
-      if (!id) return;
+   function saveRefEdits(event) {
+  event.preventDefault();
+  
+  // 1. Pega os novos valores digitados
+  const id = document.getElementById('editRefId').value;
+  const newTitle = document.getElementById('editRefTitle').value.trim();
+  const rawTags = document.getElementById('editRefTags').value;
+  const newNotes = document.getElementById('editRefNotes').value.trim();
 
-      // Busca o item no array de referências existente
-      const refIndex = references.findIndex(r => r.id === id);
+  // Converte a string de tags em uma lista/array
+  const newTagsArray = rawTags
+    .split(',')
+    .map(t => t.trim())
+    .filter(t => t.length > 0);
 
-      if (refIndex !== -1) {
-        // Atualiza as propriedades no objeto
-        references[refIndex].title = document.getElementById('editRefTitle').value.trim();
-        
-        const rawTags = document.getElementById('editRefTags').value;
-        references[refIndex].tags = rawTags.split(',')
-          .map(t => t.trim())
-          .filter(t => t.length > 0);
-        
-        references[refIndex].notes = document.getElementById('editRefNotes').value.trim();
+  // 2. Tenta encontrar a lista de dados global no seu programa
+  // (Verifica os nomes de variáveis mais comuns usados nesse tipo de sistema)
+  let refList = window.references || window.assets || window.items || window.refData;
 
-        // Persiste no localStorage
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('refhub_references', JSON.stringify(references));
-        }
-
-        // Recarrega a interface
-        if (typeof renderGrid === 'function') renderGrid();
-        if (typeof renderReferences === 'function') renderReferences();
-        if (typeof renderTags === 'function') renderTags();
-        if (typeof renderTagsSidebar === 'function') renderTagsSidebar();
-      }
+  // Se não achou na memória, busca direto do localStorage
+  if (!refList && typeof localStorage !== 'undefined') {
+    const localData = localStorage.getItem('refhub_references') || localStorage.getItem('references') || localStorage.getItem('assets');
+    if (localData) {
+      refList = JSON.parse(localData);
     }
+  }
+
+  // 3. Se encontrou a lista, atualiza o item editado
+  if (refList && Array.isArray(refList)) {
+    // Procura o item pelo ID ou pela imagem que está aparecendo na tela
+    const currentImgSrc = document.getElementById('inspectorImage')?.src;
+    
+    const index = refList.findIndex(r => 
+      (id && (r.id == id || r._id == id)) || 
+      (currentImgSrc && (r.imageUrl === currentImgSrc || r.url === currentImgSrc || r.src === currentImgSrc))
+    );
+
+    if (index !== -1) {
+      // Atualiza o título, tags e notas no item
+      refList[index].title = newTitle;
+      refList[index].tags = newTagsArray;
+      refList[index].notes = newNotes;
+      refList[index].description = newNotes; // Atualiza ambos os campos por garantia
+
+      // Salva de volta na memória global
+      if (window.references) window.references = refList;
+      if (window.assets) window.assets = refList;
+
+      // Salva no armazenamento do navegador
+      localStorage.setItem('refhub_references', JSON.stringify(refList));
+      localStorage.setItem('references', JSON.stringify(refList));
+
+      // Atualiza os elementos visuais na tela imediatamente
+      const titleElem = document.getElementById('inspectorTitle');
+      if (titleElem) titleElem.textContent = newTitle;
+
+      const notesElem = document.getElementById('inspectorNotes');
+      if (notesElem) notesElem.textContent = newNotes;
+
+      // Recarrega as funções da galeria caso elas existam no seu script
+      if (typeof renderGrid === 'function') renderGrid();
+      if (typeof renderReferences === 'function') renderReferences();
+      if (typeof renderAssets === 'function') renderAssets();
+      if (typeof renderTagsSidebar === 'function') renderTagsSidebar();
+
+      alert('Alterações salvas com sucesso!');
+      return;
+    }
+  }
+
+  alert('Aviso: Não foi possível localizar a referência na memória. Se o problema persistir, cole aqui o trecho da sua tag <script> final.');
+}
+ }
   </script>
 
 </body>
