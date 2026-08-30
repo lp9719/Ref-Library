@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RefHub - Eagle Style Asset Manager</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#18181b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3176/3176396.png">
+<link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3176/3176396.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+}
+</script>
+<style>
+/* Custom Scrollbar */
+.dark ::-webkit-scrollbar-track { background: #18181b; }
+.dark ::-webkit-scrollbar-thumb { background: #3f3f46; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f4f4f5; }
+::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+/* Active States */
+.dark .folder-active { background-color: #27272a !important; color: #60a5fa !important; font-weight: 600; }
+.folder-active { background-color: #e4e4e7 !important; color: #2563eb !important; font-weight: 600; }
+.card-selected { ring: 2px solid #3b82f6; border-color: #3b82f6 !important; }
+/* Canvas Grid Background */
+.dark #moodboardCanvas {
+  background-size: 20px 20px;
+  background-image: radial-gradient(circle, #3f3f46 1px, transparent 1px);
+}
+#moodboardCanvas {
+  background-size: 20px 20px;
+  background-image: radial-gradient(circle, #d4d4d8 1px, transparent 1px);
+}
+.moodboard-card { touch-action: none; user-select: none; }
+.moodboard-card.dragging { opacity: 0.8; cursor: grabbing !important; z-index: 50 !important; }
+</style>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('Service Worker ativo!', reg))
+      .catch(err => console.log('Falha no SW:', err));
+  });
+}
+</script>
+</head>
+<body class="bg-zinc-100 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 font-sans h-screen flex flex-col overflow-hidden select-none transition-colors duration-200">
+<!-- ================= AUTH SCREEN ================= -->
+<div id="authScreen" class="fixed inset-0 bg-zinc-100 dark:bg-zinc-950 z-50 flex items-center justify-center p-4">
+<div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden">
+<div class="text-center mb-6">
+<div class="inline-flex items-center justify-center w-12 h-12 bg-blue-600/10 text-blue-500 rounded-xl mb-3 border border-blue-500/20">
+<i class="fa-solid fa-folder-closed text-2xl"></i>
+</div>
+<h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100" id="authTitle">Entrar no RefHub</h2>
+<p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1" id="authSubtitle">Sua biblioteca de inspiração e referências</p>
+</div>
+<button id="btnGoogleAuth" class="w-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium py-2.5 px-4 border border-zinc-300 dark:border-zinc-700 rounded-xl flex items-center justify-center gap-3 transition-colors shadow-sm mb-4 text-sm">
+<svg class="w-5 h-5" viewBox="0 0 24 24">
+<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+<path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85c.21-.63.34-1.32.34-2.06z"/>
+<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+</svg>
+Continuar com Google
+</button>
+<div class="relative flex py-2 items-center mb-4">
+<div class="flex-grow border-t border-zinc-200 dark:border-zinc-800"></div>
+<span class="flex-shrink mx-3 text-zinc-400 dark:text-zinc-500 text-xs">ou e-mail</span>
+<div class="flex-grow border-t border-zinc-200 dark:border-zinc-800"></div>
+</div>
+<form id="authForm" class="space-y-3">
+<div id="usernameField" class="hidden">
+<label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Nome de Usuário</label>
+<input type="text" id="authUsername" placeholder="seu_nome" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+</div>
+<div>
+<label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">E-mail</label>
+<input type="email" id="authEmail" required placeholder="seu@email.com" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+</div>
+<div>
+<label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Senha</label>
+<input type="password" id="authPassword" required placeholder="........" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+</div>
+<div id="authError" class="text-red-500 text-xs text-center hidden"></div>
+<button type="submit" id="btnSubmitAuth" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-lg text-sm transition-colors mt-2">
+Entrar
+</button>
+</form>
+<div class="mt-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
+<span id="authToggleText">Ainda não tem conta?</span>
+<button id="btnToggleAuthMode" class="text-blue-500 hover:underline font-semibold ml-1">Cadastrar-se</button>
+</div>
+</div>
+</div>
+<!-- ================= LAYOUT PRINCIPAL EAGLE ================= -->
+<!-- BARRA SUPERIOR / TOPBAR EAGLE -->
+<header class="h-12 bg-zinc-200/80 dark:bg-zinc-900 border-b border-zinc-300 dark:border-zinc-800 px-4 flex items-center justify-between shrink-0 text-xs transition-colors">
+<div class="flex items-center gap-3">
+<!-- Botão para Recolher/Mostrar Sidebar Esquerda -->
+<button id="btnToggleLeftSidebar" onclick="toggleLeftSidebar()" title="Alternar Painel de Pastas" class="px-2 py-1 rounded bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors">
+<i class="fa-solid fa-sidebar"></i>
+</button>
+<div class="flex items-center gap-2 font-bold text-zinc-900 dark:text-zinc-100 text-sm tracking-wide">
+<i class="fa-solid fa-folder-closed text-blue-600 dark:text-blue-500"></i> RefHub
+</div>
+<span class="text-zinc-400 dark:text-zinc-600">|</span>
+<!-- Search Input Header -->
+<div class="relative w-48 sm:w-80">
+<i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs"></i>
+<input type="text" id="searchInput" placeholder="Pesquisar por título, tag, notas..." class="w-full pl-8 pr-3 py-1 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-md text-xs text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-blue-500">
+</div>
+</div>
+<div class="flex items-center gap-2 sm:gap-3">
+<!-- Botão para o Modo Prática Timed -->
+<button id="btnOpenPracticeModal" class="bg-amber-600/10 hover:bg-amber-600/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-medium px-2.5 py-1 rounded-md flex items-center gap-1.5 transition-colors">
+<i class="fa-solid fa-stopwatch"></i> <span class="hidden md:inline">Prática Timed</span>
+</button>
+<span class="text-zinc-300 dark:text-zinc-700">|</span>
+<!-- Seletor de Tema Light/Dark -->
+<button id="themeToggleBtn" title="Alternar Tema" class="px-2.5 py-1 text-xs rounded-md bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-colors">
+<i id="themeToggleIcon" class="fa-solid fa-moon"></i>
+</button>
+<span class="text-zinc-300 dark:text-zinc-700">|</span>
+<!-- Alternate View Buttons -->
+<div class="flex bg-zinc-300/60 dark:bg-zinc-950 p-0.5 rounded-md border border-zinc-300 dark:border-zinc-800">
+<button id="btnViewGrid" onclick="switchView('grid')" class="px-2.5 py-1 text-xs rounded bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 transition-all">
+<i class="fa-solid fa-border-all"></i> <span class="hidden sm:inline">Grade</span>
+</button>
+<button id="btnViewMoodboard" onclick="switchView('moodboard')" class="px-2.5 py-1 text-xs rounded text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center gap-1.5 transition-all">
+<i class="fa-solid fa-cubes"></i> <span class="hidden sm:inline">Moodboard</span>
+</button>
+</div>
+<span class="text-zinc-300 dark:text-zinc-700">|</span>
+<button id="btnBatchRef" class="bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 px-2.5 py-1 rounded-md flex items-center gap-1.5 transition-colors">
+<i class="fa-solid fa-layer-group"></i> <span class="hidden md:inline">Em Lote</span>
+</button>
+<button id="btnNewRef" onclick="openRefModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors shadow-sm">
+<i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Adicionar</span>
+</button>
+<span class="text-zinc-300 dark:text-zinc-700">|</span>
+<!-- Botão para Recolher/Mostrar Inspector Direito -->
+<button id="btnToggleRightSidebar" onclick="toggleRightSidebar()" title="Alternar Painel de Detalhes" class="px-2 py-1 rounded bg-zinc-300/70 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors">
+<i class="fa-solid fa-sliders"></i>
+</button>
+</div>
+</header>
+<!-- CORPO PRINCIPAL COM 3 PAINÉIS -->
+<div class="flex-1 flex overflow-hidden relative">
+<!-- COLUNA 1: SIDEBAR ESQUERDA (NAVEGAÇÃO E PASTAS) -->
+<aside id="leftSidebar" class="w-64 bg-zinc-200/50 dark:bg-zinc-900/60 border-r border-zinc-300 dark:border-zinc-800/80 flex flex-col justify-between shrink-0 transition-all duration-200">
+<div class="p-3 flex flex-col h-full overflow-hidden">
+<div class="flex items-center justify-between mb-3 px-1">
+<span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Biblioteca</span>
+<div class="flex items-center gap-1">
+<button onclick="toggleExpandAllFolders()" title="Expandir/Recolher Tudo" class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 text-xs p-1">
+<i class="fa-solid fa-arrows-up-down"></i>
+</button>
+<button id="btnNewFolder" title="Nova Pasta" class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 text-xs p-1">
+<i class="fa-solid fa-folder-plus"></i>
+</button>
+<button onclick="toggleLeftSidebar()" title="Ocultar Painel" class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 text-xs p-1 ml-1">
+<i class="fa-solid fa-xmark"></i>
+</button>
+</div>
+</div>
+<nav class="space-y-0.5 overflow-y-auto flex-1 pr-1" id="foldersList">
+<!-- Renderizado via JS -->
+</nav>
+<!-- Seção de Tags -->
+<div class="pt-3 border-t border-zinc-300 dark:border-zinc-800/80 mt-2">
+<div class="flex items-center justify-between mb-2 px-1">
+<span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Tags</span>
+<button id="btnClearTagFilter" onclick="filterByTag(null)" class="hidden text-[10px] text-blue-600 dark:text-blue-400 hover:underline">Limpar</button>
+</div>
+<div id="tagsListSidebar" class="flex flex-wrap gap-1 max-h-36 overflow-y-auto pr-1">
+<!-- Tags Renderizadas via JS -->
+</div>
+</div>
+</div>
+<!-- Rodapé do Usuário -->
+<div class="p-3 border-t border-zinc-300 dark:border-zinc-800/80 bg-zinc-200/80 dark:bg-zinc-900/40 flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400 transition-colors">
+<div class="flex items-center gap-2 overflow-hidden">
+<div id="userAvatar" class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0">U</div>
+<span id="userNameDisplay" class="truncate text-zinc-800 dark:text-zinc-300 font-medium">Usuário</span>
+</div>
+<div class="flex items-center gap-1">
+<button id="btnOpenBackupModal" title="Backup" class="hover:text-zinc-900 dark:hover:text-zinc-100 p-1"><i class="fa-solid fa-floppy-disk"></i></button>
+<button id="btnLogout" title="Sair" class="hover:text-red-600 dark:hover:text-red-400 p-1"><i class="fa-solid fa-right-from-bracket"></i></button>
+</div>
+</div>
+</aside>
+<!-- Botão Flutuante quando a Sidebar Esquerda estiver Fechada -->
+<button id="btnOpenLeftFloating" onclick="toggleLeftSidebar()" title="Abrir Pastas" class="hidden absolute top-3 left-3 z-30 bg-white/90 dark:bg-zinc-900/90 border border-zinc-300 dark:border-zinc-800 shadow-md p-2 rounded-lg text-xs text-zinc-700 dark:text-zinc-300 hover:text-blue-500">
+<i class="fa-solid fa-folder"></i>
+</button>
+<!-- COLUNA 2: ÁREA CENTRAL (GALERIA OU CANVAS MOODBOARD) -->
+<main class="flex-1 bg-zinc-100 dark:bg-zinc-950 flex flex-col overflow-hidden relative transition-colors">
+<!-- Visualização Grade / Galeria -->
+<section id="mainContent" class="flex-1 overflow-y-auto p-4">
+<div id="referencesGrid" class="grid grid-cols-3 gap-4">
+<!-- Cards Renderizados em JS -->
+</div>
+<div id="emptyState" class="hidden text-center py-24 text-zinc-400 dark:text-zinc-500">
+<i class="fa-regular fa-image text-5xl mb-3 opacity-40"></i>
+<p class="font-medium text-zinc-600 dark:text-zinc-400">Nenhum asset encontrado.</p>
+<p class="text-xs text-zinc-400 dark:text-zinc-600 mt-1">Arraste links ou clique em + Adicionar para incluir novidades.</p>
+</div>
+</section>
+<!-- Visualização Moodboard Canvas -->
+<section id="moodboardSection" class="flex-1 relative overflow-hidden bg-zinc-100 dark:bg-zinc-950 hidden">
+<div id="moodboardCanvas" class="w-full h-full relative overflow-auto p-8">
+<!-- Canvas Moodboard -->
+</div>
+</section>
+</main>
+<!-- COLUNA 3: PAINEL DIREITO DE INSPEÇÃO / DETALHES -->
+<aside id="inspectorPanel" class="w-72 bg-zinc-200/60 dark:bg-zinc-900/90 border-l border-zinc-300 dark:border-zinc-800/80 flex flex-col shrink-0 overflow-y-auto transition-all duration-200">
+<!-- Cabeçalho do Inspector com opção de Fechar -->
+<div class="px-4 pt-3 flex items-center justify-between text-zinc-500 border-b border-zinc-300/50 dark:border-zinc-800/50 pb-2">
+<span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Detalhes do Asset</span>
+<button onclick="toggleRightSidebar()" title="Ocultar Painel" class="hover:text-zinc-900 dark:hover:text-zinc-100 text-xs">
+<i class="fa-solid fa-xmark"></i>
+</button>
+</div>
+<!-- Estado Vazio do Inspector -->
+<div id="inspectorEmptyState" class="flex flex-col items-center justify-center h-full text-zinc-400 dark:text-zinc-600 text-center p-6">
+<i class="fa-solid fa-sliders text-4xl mb-3 opacity-40"></i>
+<p class="text-xs font-medium">Selecione uma imagem para visualizar seus detalhes e anotações.</p>
+</div>
+<!-- Conteúdo do Inspector -->
+<div id="inspectorContent" class="hidden p-4 space-y-5 text-xs">
+<!-- Preview em miniatura ampliada -->
+<div class="relative bg-white dark:bg-zinc-950 rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-800 flex items-center justify-center group shadow-sm">
+<img id="inspectorImage" src="" alt="" class="w-full h-48 object-contain">
+<button id="btnInspectorZoom" class="absolute bottom-2 right-2 bg-white/80 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 p-1.5 rounded text-xs transition-colors shadow-sm">
+<i class="fa-solid fa-expand"></i> Ampliar
+</button>
+</div>
+<!-- Título e Domínio -->
+<div>
+<h3 id="inspectorTitle" class="font-bold text-zinc-900 dark:text-zinc-100 text-sm leading-snug break-words"></h3>
+<a id="inspectorUrl" href="" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline text-[11px] truncate block mt-1">
+<i class="fa-solid fa-link text-[10px]"></i> <span id="inspectorDomain"></span>
+</a>
+</div>
+<hr class="border-zinc-300 dark:border-zinc-800">
+<!-- Informações e Metadados -->
+<div class="space-y-2 text-zinc-500 dark:text-zinc-400">
+<div class="flex justify-between">
+<span>Adicionado em:</span>
+<span id="inspectorDate" class="text-zinc-800 dark:text-zinc-200 font-mono"></span>
+</div>
+<div class="flex justify-between">
+<span>Pasta:</span>
+<span id="inspectorFolder" class="text-zinc-800 dark:text-zinc-200"></span>
+</div>
+</div>
+<hr class="border-zinc-300 dark:border-zinc-800">
+<!-- Tags -->
+<div>
+<label class="block text-zinc-500 dark:text-zinc-400 font-semibold mb-1.5 uppercase text-[10px] tracking-wider">Tags</label>
+<div id="inspectorTags" class="flex flex-wrap gap-1">
+<!-- Tags renderizadas aqui -->
+</div>
+</div>
+<hr class="border-zinc-300 dark:border-zinc-800">
+<!-- Anotações / Descrição -->
+<div>
+<label class="block text-zinc-500 dark:text-zinc-400 font-semibold mb-1.5 uppercase text-[10px] tracking-wider">Anotações / Descrição</label>
+<p id="inspectorNotes" class="bg-white dark:bg-zinc-950 p-2.5 rounded border border-zinc-300 dark:border-zinc-800/80 text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap min-h-[60px]"></p>
+</div>
+<!-- Ações do Asset -->
+<div class="pt-4 flex gap-2">
+<a id="btnInspectorOpen" href="" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-1.5 px-3 rounded text-center transition-colors shadow-sm">
+Acessar Link
+</a>
+<button id="btnInspectorEdit" class="bg-zinc-300/60 dark:bg-zinc-800 hover:bg-zinc-400 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700/50 px-2.5 py-1.5 rounded transition-colors" title="Editar Referência">
+<i class="fa-solid fa-pen"></i>
+</button>
+<button id="btnInspectorDelete" class="bg-zinc-300/60 dark:bg-zinc-800 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 border border-zinc-300 dark:border-zinc-700/50 px-2.5 py-1.5 rounded transition-colors" title="Excluir Referência">
+<i class="fa-solid fa-trash"></i>
+</button>
+</div>
+</div>
+</aside>
+</div>
+<!-- ================= MODAIS & SESSÃO DE PRÁTICA ================= -->
+<!-- MODAL: Configurar Prática Timed -->
+<div id="modalPractice" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
+<div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl text-xs">
+<div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-4">
+<h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+<i class="fa-solid fa-stopwatch text-amber-500"></i> Prática Timed (Gesture Drawing)
+</h3>
+<button id="btnClosePracticeModal" class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-lg">&times;</button>
+</div>
+<form id="practiceForm" class="space-y-4">
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Filtrar Origem das Imagens</label>
+<select id="practiceSourceType" onchange="togglePracticeSourceOptions()" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+<option value="all">Misto (Toda a Biblioteca)</option>
+<option value="folder">Por Pasta</option>
+<option value="tag">Por Tag</option>
+</select>
+</div>
+<div id="practiceFolderContainer" class="hidden">
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Selecione a Pasta</label>
+<select id="practiceFolderSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500"></select>
+</div>
+<div id="practiceTagContainer" class="hidden">
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Selecione a Tag</label>
+<select id="practiceTagSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500"></select>
+</div>
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Tempo por Imagem</label>
+<select id="practiceTimeSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+<option value="30">30 segundos</option>
+<option value="45">45 segundos</option>
+<option value="60" selected>1 minuto</option>
+<option value="120">2 minutos</option>
+<option value="300">5 minutos</option>
+<option value="600">10 minutos</option>
+</select>
+</div>
+<div class="flex items-center gap-2 pt-1">
+<input type="checkbox" id="practiceRandomize" checked class="rounded bg-zinc-950 border-zinc-800 text-amber-500 focus:ring-0">
+<label for="practiceRandomize" class="text-zinc-700 dark:text-zinc-300">Embaralhar ordem (Random)</label>
+</div>
+<div class="flex justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+<button type="button" id="btnCancelPractice" class="px-3 py-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200">Cancelar</button>
+<button type="submit" class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-medium shadow-sm transition-colors flex items-center gap-1.5">
+<i class="fa-solid fa-play text-xs"></i> Iniciar Treino
+</button>
+</div>
+</form>
+</div>
+</div>
+<!-- TELA CHEIA: Sessão de Prática (Modo Foco / Zen) -->
+<div id="practiceView" class="fixed inset-0 bg-zinc-950 z-50 hidden flex-col justify-between items-center select-none overflow-hidden p-6">
+<!-- Topbar Foco -->
+<div class="w-full max-w-5xl flex items-center justify-between text-zinc-400 text-xs">
+<div class="flex items-center gap-3">
+<span id="practiceCounter" class="font-mono bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800 text-zinc-300">0/0</span>
+<span id="practiceCurrentTitle" class="truncate max-w-xs sm:max-w-md text-zinc-400"></span>
+</div>
+<!-- Cronômetro central grande -->
+<div class="flex items-center gap-2">
+<i class="fa-solid fa-clock text-amber-500"></i>
+<span id="practiceTimerDisplay" class="font-mono text-2xl font-bold text-amber-400 tracking-wider">00:00</span>
+</div>
+<button onclick="stopPracticeSession()" title="Sair da Prática (ESC)" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg border border-zinc-800 flex items-center gap-1.5 transition-colors">
+<i class="fa-solid fa-xmark"></i> Fechar
+</button>
+</div>
+<!-- Área de Exibição da Imagem Principal -->
+<div class="flex-1 w-full max-w-5xl my-4 relative flex items-center justify-center overflow-hidden">
+<img id="practiceImage" src="" alt="Prática" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-opacity duration-200 opacity-100">
+</div>
+<!-- Barra de Controles Inferior -->
+<div class="w-full max-w-md bg-zinc-900/90 border border-zinc-800/80 rounded-2xl p-3 flex items-center justify-around text-zinc-300 shadow-2xl backdrop-blur-sm">
+<button onclick="prevPracticeImage()" title="Anterior (Seta Esquerda)" class="hover:text-amber-400 p-2 transition-colors">
+<i class="fa-solid fa-backward-step text-lg"></i>
+</button>
+<button onclick="togglePausePractice()" id="btnPausePractice" title="Pausar / Continuar (Espaço)" class="bg-amber-600 hover:bg-amber-500 text-white w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-md">
+<i class="fa-solid fa-pause text-sm"></i>
+</button>
+<button onclick="nextPracticeImage()" title="Próxima (Seta Direita)" class="hover:text-amber-400 p-2 transition-colors">
+<i class="fa-solid fa-forward-step text-lg"></i>
+</button>
+</div>
+</div>
+<!-- MODAL: Exportar / Importar Backup -->
+<div id="modalBackup" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
+<div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-5 text-xs">
+<div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+<h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+<i class="fa-solid fa-floppy-disk text-blue-500"></i> Backup & Exportação
+</h3>
+<button id="btnCloseBackupModal" class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-lg">&times;</button>
+</div>
+<div>
+<p class="font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Exportar Seus Dados</p>
+<div class="grid grid-cols-2 gap-3">
+<button id="btnExportJSON" class="bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-zinc-300 dark:border-zinc-700">
+<i class="fa-solid fa-code"></i> Baixar JSON
+</button>
+<button id="btnExportCSV" class="bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
+<i class="fa-solid fa-file-excel"></i> Baixar CSV
+</button>
+</div>
+</div>
+<hr class="border-zinc-200 dark:border-zinc-800">
+<div>
+<p class="font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Restaurar / Importar</p>
+<p class="text-zinc-400 dark:text-zinc-500 mb-3">Selecione um arquivo .json gerado anteriormente.</p>
+<input type="file" id="importJsonInput" accept=".json" class="hidden">
+<button id="btnTriggerImport" class="w-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-blue-600 dark:text-blue-400 border border-zinc-300 dark:border-zinc-700 py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
+<i class="fa-solid fa-file-import"></i> Selecionar Arquivo JSON
+</button>
+</div>
+</div>
+</div>
+<!-- MODAL: Nova / Editar Pasta -->
+<div id="modalFolder" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
+<div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-sm w-full p-6 shadow-2xl text-xs">
+<h3 id="modalFolderTitle" class="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-4">Criar Pasta</h3>
+<input type="hidden" id="editingFolderId" value="">
+<div class="space-y-4">
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Nome da Pasta</label>
+<input type="text" id="folderNameInput" placeholder="Ex: UI Design, Ilustrações..." class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500">
+</div>
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Pasta Pai (opcional)</label>
+<select id="parentFolderSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></select>
+</div>
+</div>
+<div class="flex justify-end gap-2 mt-6">
+<button id="btnCloseFolderModal" class="px-3 py-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200">Cancelar</button>
+<button id="btnSaveFolder" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 font-medium">Salvar</button>
+</div>
+</div>
+</div>
+<!-- MODAL: Nova / Editar Referência -->
+<div id="modalRef" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
+<div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl text-xs">
+<h3 id="modalRefTitle" class="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-4">Adicionar Referência</h3>
+<input type="hidden" id="editingRefId" value="">
+<form id="refForm" class="space-y-3">
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Link (URL) *</label>
+<input type="url" id="refUrl" required placeholder="https://..." class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500">
+</div>
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Título (Opcional)</label>
+<input type="text" id="refTitle" placeholder="Se vazio usa o domínio" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500">
+</div>
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Tags (Separadas por vírgula)</label>
+<input type="text" id="refTags" placeholder="ui, dashboard, 3d" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500">
+</div>
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Pasta Destino</label>
+<select id="refFolderSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></select>
+</div>
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Anotações / Notas</label>
+<textarea id="refNotes" rows="2" placeholder="Observações..." class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></textarea>
+</div>
+<div class="flex justify-end gap-2 pt-2">
+<button type="button" id="btnCloseRefModal" class="px-3 py-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200">Cancelar</button>
+<button type="submit" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 font-medium">Salvar Asset</button>
+</div>
+</form>
+</div>
+</div>
+<!-- MODAL: Importar em Lote -->
+<div id="modalBatchRef" class="fixed inset-0 bg-black/60 dark:bg-black/70 hidden items-center justify-center p-4 z-50">
+<div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl text-xs">
+<h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1">Adicionar Vários Links</h3>
+<p class="text-zinc-500 dark:text-zinc-400 mb-4">Cole uma lista de URLs (uma por linha).</p>
+<form id="batchForm" class="space-y-3">
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">URLs (uma por linha)</label>
+<textarea id="batchUrls" rows="6" required placeholder="https://site1.com/imagem1.jpg&#10;https://site2.com/artigo" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 font-mono text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></textarea>
+</div>
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Tags para todos</label>
+<input type="text" id="batchTags" placeholder="inspiração, projeto2026" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500">
+</div>
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Pasta Destino</label>
+<select id="batchFolderSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></select>
+</div>
+<div class="flex justify-end gap-2 pt-2">
+<button type="button" id="btnCloseBatchModal" class="px-3 py-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200">Cancelar</button>
+<button type="submit" id="btnSaveBatch" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 font-medium">Salvar Todos</button>
+</div>
+</form>
+</div>
+</div>
+<!-- MODAL: Lightbox Imagem Ampliada -->
+<div id="imageViewerModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center p-4 z-50 transition-opacity" onclick="closeImageViewer()">
+<div class="relative max-w-5xl max-h-[95vh] flex flex-col items-center" onclick="event.stopPropagation()">
+<button onclick="closeImageViewer()" class="absolute -top-10 right-0 text-zinc-400 hover:text-white text-xl font-bold bg-zinc-800/80 rounded-full w-8 h-8 flex items-center justify-center">
+&times;
+</button>
+<img id="imageViewerSrc" src="" alt="Ampliada" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain bg-zinc-950">
+<div class="flex items-center justify-between w-full mt-3 px-2 text-xs">
+<p id="imageViewerTitle" class="text-zinc-300 font-medium truncate max-w-md"></p>
+<a id="imageViewerDownload" href="" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors">
+<i class="fa-solid fa-arrow-up-right-from-square"></i> Original
+</a>
+</div>
+</div>
+</div>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB0TXsAPXMmt_5QI8UPY028zjXy9dYQxAQ",
+  authDomain: "refhub-studio.firebaseapp.com",
+  projectId: "refhub-studio",
+  storageBucket: "refhub-studio.firebasestorage.app",
+  messagingSenderId: "334625263765",
+  appId: "1:334625263765:web:ec9ee61d266db34eb10b9c"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let currentUser = null;
+let isSignUpMode = false;
+let folders = [];
+let references = [];
+let currentFolderId = 'all';
+let selectedTagFilter = null;
+let currentView = 'grid';
+let selectedRefId = null;
+// Estado de Expansão das Pastas (Accordion)
+let expandedFolders = new Set();
+// Estado de Visibilidade das Colunas Laterais
+let isLeftSidebarOpen = true;
+let isRightSidebarOpen = true;
+// Estado do Timed Practice
+let practiceQueue = [];
+let currentPracticeIndex = 0;
+let practiceTimerInterval = null;
+let practiceSecondsLeft = 0;
+let practiceTimePerImage = 60;
+let isPracticePaused = false;
+let unsubscribeFolders = null;
+let unsubscribeReferences = null;
+// Lógica do Tema (Light / Dark)
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+const themeToggleIcon = document.getElementById('themeToggleIcon');
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'light' || (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+    document.documentElement.classList.remove('dark');
+    themeToggleIcon.className = 'fa-solid fa-sun text-amber-500';
+  } else {
+    document.documentElement.classList.add('dark');
+    themeToggleIcon.className = 'fa-solid fa-moon text-blue-400';
+  }
+}
+themeToggleBtn.onclick = () => {
+  const isDark = document.documentElement.classList.toggle('dark');
+  if (isDark) {
+    localStorage.setItem('theme', 'dark');
+    themeToggleIcon.className = 'fa-solid fa-moon text-blue-400';
+  } else {
+    localStorage.setItem('theme', 'light');
+    themeToggleIcon.className = 'fa-solid fa-sun text-amber-500';
+  }
+};
+initTheme();
+// Toggle Colunas Laterais
+function toggleLeftSidebar() {
+  const leftSidebar = document.getElementById('leftSidebar');
+  const btnOpenLeftFloating = document.getElementById('btnOpenLeftFloating');
+  isLeftSidebarOpen = !isLeftSidebarOpen;
+  if (isLeftSidebarOpen) {
+    leftSidebar.classList.remove('-ml-64', 'w-0', 'p-0', 'opacity-0');
+    leftSidebar.classList.add('w-64');
+    btnOpenLeftFloating.classList.add('hidden');
+  } else {
+    leftSidebar.classList.add('-ml-64', 'w-0', 'p-0', 'opacity-0');
+    leftSidebar.classList.remove('w-64');
+    btnOpenLeftFloating.classList.remove('hidden');
+  }
+}
+function toggleRightSidebar() {
+  const inspectorPanel = document.getElementById('inspectorPanel');
+  isRightSidebarOpen = !isRightSidebarOpen;
+  if (isRightSidebarOpen) {
+    inspectorPanel.classList.remove('-mr-72', 'w-0', 'opacity-0');
+    inspectorPanel.classList.add('w-72');
+  } else {
+    inspectorPanel.classList.add('-mr-72', 'w-0', 'opacity-0');
+    inspectorPanel.classList.remove('w-72');
+  }
+}
+// Elementos da Interface
+const authScreen = document.getElementById('authScreen');
+const authForm = document.getElementById('authForm');
+const authTitle = document.getElementById('authTitle');
+const authSubtitle = document.getElementById('authSubtitle');
+const authUsername = document.getElementById('authUsername');
+const usernameField = document.getElementById('usernameField');
+const authEmail = document.getElementById('authEmail');
+const authPassword = document.getElementById('authPassword');
+const authError = document.getElementById('authError');
+const btnSubmitAuth = document.getElementById('btnSubmitAuth');
+const btnToggleAuthMode = document.getElementById('btnToggleAuthMode');
+const authToggleText = document.getElementById('authToggleText');
+const btnGoogleAuth = document.getElementById('btnGoogleAuth');
+const btnLogout = document.getElementById('btnLogout');
+const userNameDisplay = document.getElementById('userNameDisplay');
+const userAvatar = document.getElementById('userAvatar');
+const foldersList = document.getElementById('foldersList');
+const tagsListSidebar = document.getElementById('tagsListSidebar');
+const btnClearTagFilter = document.getElementById('btnClearTagFilter');
+const mainContent = document.getElementById('mainContent');
+const moodboardSection = document.getElementById('moodboardSection');
+const moodboardCanvas = document.getElementById('moodboardCanvas');
+const referencesGrid = document.getElementById('referencesGrid');
+const emptyState = document.getElementById('emptyState');
+const refFolderSelect = document.getElementById('refFolderSelect');
+const batchFolderSelect = document.getElementById('batchFolderSelect');
+const parentFolderSelect = document.getElementById('parentFolderSelect');
+const searchInput = document.getElementById('searchInput');
+const inspectorEmptyState = document.getElementById('inspectorEmptyState');
+const inspectorContent = document.getElementById('inspectorContent');
+const modalFolder = document.getElementById('modalFolder');
+const modalRef = document.getElementById('modalRef');
+const modalBatchRef = document.getElementById('modalBatchRef');
+const modalBackup = document.getElementById('modalBackup');
+const modalPractice = document.getElementById('modalPractice');
+const imageViewerModal = document.getElementById('imageViewerModal');
+// Modais
+document.getElementById('btnNewFolder').onclick = () => openFolderModal();
+document.getElementById('btnCloseFolderModal').onclick = () => modalFolder.classList.replace('flex', 'hidden');
+document.getElementById('btnCloseRefModal').onclick = () => modalRef.classList.replace('flex', 'hidden');
+document.getElementById('btnBatchRef').onclick = () => modalBatchRef.classList.replace('hidden', 'flex');
+document.getElementById('btnCloseBatchModal').onclick = () => modalBatchRef.classList.replace('flex', 'hidden');
+document.getElementById('btnOpenBackupModal').onclick = () => modalBackup.classList.replace('hidden', 'flex');
+document.getElementById('btnCloseBackupModal').onclick = () => modalBackup.classList.replace('flex', 'hidden');
+// Modal Prática Timed
+document.getElementById('btnOpenPracticeModal').onclick = () => openPracticeModal();
+document.getElementById('btnClosePracticeModal').onclick = () => modalPractice.classList.replace('flex', 'hidden');
+document.getElementById('btnCancelPractice').onclick = () => modalPractice.classList.replace('flex', 'hidden');
+btnToggleAuthMode.onclick = () => {
+  isSignUpMode = !isSignUpMode;
+  authError.classList.add('hidden');
+  if (isSignUpMode) {
+    authTitle.innerText = 'Criar Conta';
+    authSubtitle.innerText = 'Preencha seus dados';
+    usernameField.classList.remove('hidden');
+    btnSubmitAuth.innerText = 'Cadastrar';
+    authToggleText.innerText = 'Já possui uma conta?';
+    btnToggleAuthMode.innerText = 'Fazer Login';
+  } else {
+    authTitle.innerText = 'Entrar no RefHub';
+    authSubtitle.innerText = 'Sua biblioteca de inspiração';
+    usernameField.classList.add('hidden');
+    btnSubmitAuth.innerText = 'Entrar';
+    authToggleText.innerText = 'Ainda não tem conta?';
+    btnToggleAuthMode.innerText = 'Cadastrar-se';
+  }
+};
+authForm.onsubmit = async (e) => {
+  e.preventDefault();
+  authError.classList.add('hidden');
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+  try {
+    if (isSignUpMode) {
+      const username = authUsername.value.trim() || email.split('@')[0];
+      const result = await auth.createUserWithEmailAndPassword(email, password);
+      if (result.user) await result.user.updateProfile({ displayName: username }).catch(() => {});
+    } else {
+      await auth.signInWithEmailAndPassword(email, password);
+    }
+  } catch (err) {
+    authError.innerText = translateAuthError(err);
+    authError.classList.remove('hidden');
+  }
+};
+btnGoogleAuth.onclick = async () => {
+  try {
+    await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+  } catch (err) {
+    authError.innerText = translateAuthError(err);
+    authError.classList.remove('hidden');
+  }
+};
+btnLogout.onclick = () => auth.signOut();
+auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    authScreen.classList.add('hidden');
+    const name = user.displayName || user.email.split('@')[0];
+    userNameDisplay.innerText = name;
+    userAvatar.innerText = name.charAt(0).toUpperCase();
+    attachDatabaseListeners();
+  } else {
+    currentUser = null;
+    authScreen.classList.remove('hidden');
+    detachDatabaseListeners();
+  }
+});
+function translateAuthError(err) {
+  const code = err.code || err;
+  switch (code) {
+    case 'auth/invalid-email': return 'E-mail inválido.';
+    case 'auth/user-not-found': return 'Usuário não encontrado.';
+    case 'auth/wrong-password': return 'Senha incorreta.';
+    case 'auth/email-already-in-use': return 'Este e-mail já está cadastrado.';
+    case 'auth/weak-password': return 'A senha deve ter pelo menos 6 caracteres.';
+    default: return err.message || 'Erro ao autenticar.';
+  }
+}
+function attachDatabaseListeners() {
+  if (!currentUser) return;
+  if (unsubscribeFolders) unsubscribeFolders();
+  if (unsubscribeReferences) unsubscribeReferences();
+  unsubscribeFolders = db.collection('folders')
+    .where('userId', '==', currentUser.uid)
+    .onSnapshot(snapshot => {
+      folders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (expandedFolders.size === 0) {
+        folders.forEach(f => { if (!f.parentId) expandedFolders.add(f.id); });
+      }
+      renderFolders();
+      updateFolderSelects();
+    });
+  unsubscribeReferences = db.collection('references')
+    .where('userId', '==', currentUser.uid)
+    .onSnapshot(snapshot => {
+      references = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderActiveView();
+      renderFolders();
+      renderSidebarTags();
+      if (selectedRefId) updateInspector(selectedRefId);
+    });
+}
+function detachDatabaseListeners() {
+  if (unsubscribeFolders) unsubscribeFolders();
+  if (unsubscribeReferences) unsubscribeReferences();
+  folders = [];
+  references = [];
+  renderFolders();
+  renderActiveView();
+  renderSidebarTags();
+  clearInspector();
+}
+function switchView(view) {
+  currentView = view;
+  const btnGrid = document.getElementById('btnViewGrid');
+  const btnMood = document.getElementById('btnViewMoodboard');
+  if (view === 'grid') {
+    btnGrid.className = "px-2.5 py-1 text-xs rounded bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 transition-all";
+    btnMood.className = "px-2.5 py-1 text-xs rounded text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center gap-1.5 transition-all";
+    mainContent.classList.remove('hidden');
+    moodboardSection.classList.add('hidden');
+  } else {
+    btnMood.className = "px-2.5 py-1 text-xs rounded bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 transition-all";
+    btnGrid.className = "px-2.5 py-1 text-xs rounded text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center gap-1.5 transition-all";
+    mainContent.classList.add('hidden');
+    moodboardSection.classList.remove('hidden');
+  }
+  renderActiveView();
+}
+function renderActiveView() {
+  if (currentView === 'grid') renderReferences();
+  else renderMoodboard();
+}
+function openFolderModal(folderId = null) {
+  const modalTitle = document.getElementById('modalFolderTitle');
+  const input = document.getElementById('folderNameInput');
+  const editingId = document.getElementById('editingFolderId');
+  updateFolderSelects(folderId);
+  if (folderId) {
+    const folder = folders.find(f => f.id === folderId);
+    if (folder) {
+      modalTitle.innerText = 'Editar Pasta';
+      input.value = folder.name;
+      editingId.value = folder.id;
+      parentFolderSelect.value = folder.parentId || 'root';
+    }
+  } else {
+    modalTitle.innerText = 'Criar Pasta';
+    input.value = '';
+    editingId.value = '';
+    parentFolderSelect.value = 'root';
+  }
+  modalFolder.classList.replace('hidden', 'flex');
+}
+document.getElementById('btnSaveFolder').onclick = async () => {
+  const input = document.getElementById('folderNameInput');
+  const parentId = parentFolderSelect.value;
+  const editingId = document.getElementById('editingFolderId').value;
+  const name = input.value.trim();
+  if (!name || !currentUser) return;
+  const parentValue = parentId === 'root' ? null : parentId;
+  if (editingId) {
+    await db.collection('folders').doc(editingId).update({ name, parentId: parentValue });
+  } else {
+    await db.collection('folders').add({ name, parentId: parentValue, userId: currentUser.uid, createdAt: new Date() });
+    if (parentValue) expandedFolders.add(parentValue);
+  }
+  input.value = '';
+  document.getElementById('editingFolderId').value = '';
+  modalFolder.classList.replace('flex', 'hidden');
+};
+
+async function deleteFolder(folderId) {
+  if (confirm('Deseja excluir esta pasta?')) {
+    await db.collection('folders').doc(folderId).delete();
+    expandedFolders.delete(folderId);
+    if (currentFolderId === folderId) selectFolder('all');
+  }
+}
+function parseTags(tagString) {
+  if (!tagString) return [];
+  return tagString.split(',').map(t => t.trim().toLowerCase().replace(/^#/, '')).filter(t => t.length > 0);
+}
+function getDomainFromUrl(url) {
+  try { return new URL(url).hostname.replace('www.', ''); } catch (e) { return url; }
+}
+function getPreviewImage(url) {
+  try {
+    if (url.includes('i.pinimg.com')) return url.replace(/\/236x\/|\/474x\//, '/736x/');
+    if (url.includes('pinterest.com/pin/')) return `https://api.microlink.io/?url=${encodeURIComponent(url)}&embed=image.url&data.image.quality=100`;
+    return `https://api.microlink.io/?url=${encodeURIComponent(url)}&embed=image.url`;
+  } catch (e) {
+    return url;
+  }
+}
+
+// LÓGICA DE ABRIR E SALVAR O MODAL DE REFERÊNCIA (ADICIONAR E EDITAR)
+function openRefModal(refId = null) {
+  const modalTitle = document.getElementById('modalRefTitle');
+  const editingId = document.getElementById('editingRefId');
+  const urlInput = document.getElementById('refUrl');
+  const titleInput = document.getElementById('refTitle');
+  const tagsInput = document.getElementById('refTags');
+  const notesInput = document.getElementById('refNotes');
+  
+  updateFolderSelects();
+  
+  if (refId) {
+    const item = references.find(r => r.id === refId);
+    if (item) {
+      modalTitle.innerText = 'Editar Referência';
+      editingId.value = item.id;
+      urlInput.value = item.url || '';
+      titleInput.value = item.title || '';
+      tagsInput.value = item.tags ? item.tags.join(', ') : '';
+      notesInput.value = item.notes || '';
+      refFolderSelect.value = item.folderId || 'all';
+    }
+  } else {
+    modalTitle.innerText = 'Adicionar Referência';
+    editingId.value = '';
+    document.getElementById('refForm').reset();
+    refFolderSelect.value = currentFolderId !== 'all' ? currentFolderId : 'all';
+  }
+  
+  modalRef.classList.replace('hidden', 'flex');
+}
+
+document.getElementById('refForm').onsubmit = async (e) => {
+  e.preventDefault();
+  if (!currentUser) return;
+  
+  const editingId = document.getElementById('editingRefId').value;
+  const url = document.getElementById('refUrl').value.trim();
+  let title = document.getElementById('refTitle').value.trim() || getDomainFromUrl(url);
+  const rawTags = document.getElementById('refTags').value;
+  const folderId = refFolderSelect.value;
+  const notes = document.getElementById('refNotes').value;
+  
+  const dataPayload = {
+    title,
+    url,
+    folderId,
+    notes,
+    tags: parseTags(rawTags)
+  };
+  
+  if (editingId) {
+    await db.collection('references').doc(editingId).update(dataPayload);
+  } else {
+    await db.collection('references').add({
+      ...dataPayload,
+      userId: currentUser.uid,
+      createdAt: new Date()
+    });
+  }
+  
+  e.target.reset();
+  document.getElementById('editingRefId').value = '';
+  modalRef.classList.replace('flex', 'hidden');
+};
+
+document.getElementById('batchForm').onsubmit = async (e) => {
+  e.preventDefault();
+  if (!currentUser) return;
+  const rawUrls = document.getElementById('batchUrls').value;
+  const rawTags = document.getElementById('batchTags').value;
+  const folderId = batchFolderSelect.value;
+  const urls = rawUrls.split('\n').map(u => u.trim()).filter(u => u.length > 0);
+  const tags = parseTags(rawTags);
+  if (urls.length === 0) return;
+  const btnSave = document.getElementById('btnSaveBatch');
+  btnSave.disabled = true;
+  const batch = db.batch();
+  urls.forEach(url => {
+    let validUrl = url.startsWith('http') ? url : 'https://' + url;
+    const docRef = db.collection('references').doc();
+    batch.set(docRef, {
+      title: getDomainFromUrl(validUrl),
+      url: validUrl,
+      folderId: folderId,
+      notes: '',
+      tags: tags,
+      userId: currentUser.uid,
+      createdAt: new Date()
+    });
+  });
+  await batch.commit();
+  btnSave.disabled = false;
+  e.target.reset();
+  modalBatchRef.classList.replace('flex', 'hidden');
+};
+
+async function deleteRef(id) {
+  if (confirm('Deseja realmente excluir esta referência?')) {
+    await db.collection('references').doc(id).delete();
+    if (selectedRefId === id) clearInspector();
+  }
+}
+function selectFolder(id) {
+  currentFolderId = id;
+  renderFolders();
+  renderActiveView();
+}
+function toggleFolderExpand(folderId, event) {
+  if (event) event.stopPropagation();
+  if (expandedFolders.has(folderId)) {
+    expandedFolders.delete(folderId);
+  } else {
+    expandedFolders.add(folderId);
+  }
+  renderFolders();
+}
+function toggleExpandAllFolders() {
+  const hasSubfolders = folders.some(f => folders.some(c => c.parentId === f.id));
+  if (!hasSubfolders) return;
+  const parentIds = folders.filter(f => folders.some(c => c.parentId === f.id)).map(f => f.id);
+  const allExpanded = parentIds.every(id => expandedFolders.has(id));
+  if (allExpanded) {
+    expandedFolders.clear();
+  } else {
+    parentIds.forEach(id => expandedFolders.add(id));
+  }
+  renderFolders();
+}
+function openImageViewer(imgUrl, title) {
+  document.getElementById('imageViewerSrc').src = imgUrl;
+  document.getElementById('imageViewerTitle').innerText = title;
+  document.getElementById('imageViewerDownload').href = imgUrl;
+  imageViewerModal.classList.replace('hidden', 'flex');
+}
+function closeImageViewer() {
+  imageViewerModal.classList.replace('flex', 'hidden');
+  document.getElementById('imageViewerSrc').src = '';
+}
+function getFolderAndSubfolderIds(folderId) {
+  let ids = [folderId];
+  const children = folders.filter(f => f.parentId === folderId);
+  children.forEach(child => { ids = ids.concat(getFolderAndSubfolderIds(child.id)); });
+  return ids;
+}
+function renderSidebarTags() {
+  const tagCounts = {};
+  references.forEach(r => {
+    if (r.tags && Array.isArray(r.tags)) {
+      r.tags.forEach(t => {
+        const cleanTag = t.toLowerCase();
+        tagCounts[cleanTag] = (tagCounts[cleanTag] || 0) + 1;
+      });
+    }
+  });
+  const sortedTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
+  if (sortedTags.length === 0) {
+    tagsListSidebar.innerHTML = '<span class="text-[10px] text-zinc-400 dark:text-zinc-600 italic">Nenhuma tag</span>';
+    btnClearTagFilter.classList.add('hidden');
+    return;
+  }
+  btnClearTagFilter.classList.toggle('hidden', !selectedTagFilter);
+  tagsListSidebar.innerHTML = sortedTags.map(tag => {
+    const isActive = selectedTagFilter === tag;
+    return `
+      <button onclick="filterByTag('${tag}')"
+      class="text-[10px] px-2 py-0.5 rounded font-medium transition-colors flex items-center gap-1 ${isActive ? 'bg-blue-600 text-white' : 'bg-zinc-300/60 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'}">
+      #${tag}
+      <span class="opacity-60">(${tagCounts[tag]})</span>
+      </button>
+    `;
+  }).join('');
+}
+function filterByTag(tag) {
+  selectedTagFilter = (selectedTagFilter === tag) ? null : tag;
+  renderSidebarTags();
+  renderActiveView();
+}
+function getFilteredReferences() {
+  const query = searchInput.value.toLowerCase().replace(/^#/, '');
+  const validFolderIds = currentFolderId === 'all' ? null : getFolderAndSubfolderIds(currentFolderId);
+  return references.filter(r => {
+    const matchesFolder = currentFolderId === 'all' || (validFolderIds && validFolderIds.includes(r.folderId));
+    const titleMatch = r.title && r.title.toLowerCase().includes(query);
+    const notesMatch = r.notes && r.notes.toLowerCase().includes(query);
+    const tagsMatch = r.tags && r.tags.some(tag => tag.toLowerCase().includes(query));
+    const matchesSearch = titleMatch || notesMatch || tagsMatch;
+    const matchesTagFilter = selectedTagFilter ? (r.tags && r.tags.includes(selectedTagFilter)) : true;
+    return matchesFolder && matchesSearch && matchesTagFilter;
+  });
+}
+function renderFolders() {
+  const allCount = references.length;
+  let html = `
+    <button onclick="selectFolder('all')" class="${currentFolderId === 'all' ? 'folder-active' : 'text-zinc-700 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-300/50 dark:hover:bg-zinc-800/50'} w-full text-left px-2.5 py-1.5 rounded-md flex items-center justify-between text-xs transition-colors">
+    <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group text-blue-500"></i> Todos os Assets</span>
+    <span class="text-[10px] bg-zinc-300/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-1.5 py-0.5 rounded">${allCount}</span>
+    </button>
+  `;
+  const rootFolders = folders.filter(f => !f.parentId);
+  function buildFolderTree(folderList, level = 0) {
+    folderList.forEach(f => {
+      const subfolderIds = getFolderAndSubfolderIds(f.id);
+      const count = references.filter(r => subfolderIds.includes(r.folderId)).length;
+      const isActive = currentFolderId === f.id;
+      const children = folders.filter(child => child.parentId === f.id);
+      const hasChildren = children.length > 0;
+      const isExpanded = expandedFolders.has(f.id);
+      const paddingLeft = level * 12 + 8;
+      const chevronIcon = hasChildren
+        ? `<span onclick="toggleFolderExpand('${f.id}', event)" class="p-1 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer text-[10px] flex items-center justify-center transition-transform ${isExpanded ? 'rotate-90' : ''}"><i class="fa-solid fa-chevron-right text-zinc-400 dark:text-zinc-500"></i></span>`
+        : '<span class="w-4 h-4 inline-block"></span>';
+      const folderIconClass = isExpanded && hasChildren ? 'fa-folder-open text-amber-500' : 'fa-folder text-amber-500';
+      html += `
+        <div class="relative flex items-center group rounded-md ${isActive ? 'folder-active' : 'text-zinc-700 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-300/50 dark:hover:bg-zinc-800/50'}">
+        <button onclick="selectFolder('${f.id}')" style="padding-left: ${paddingLeft}px" class="w-full text-left py-1.5 pr-14 rounded-md flex items-center justify-between text-xs transition-colors">
+        <span class="flex items-center gap-1.5 truncate">
+        ${chevronIcon}
+        <i class="fa-solid ${folderIconClass} text-xs" onclick="toggleFolderExpand('${f.id}', event)"></i>
+        <span class="truncate">${f.name}</span>
+        </span>
+        <span class="text-[10px] bg-zinc-300/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-1.5 py-0.5 rounded ml-1">${count}</span>
+        </button>
+        <div class="opacity-0 group-hover:opacity-100 absolute right-1 flex items-center gap-1 transition-opacity bg-zinc-200 dark:bg-zinc-900 px-1 rounded">
+        <button onclick="event.stopPropagation(); openFolderModal('${f.id}')" title="Editar" class="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-[10px] p-0.5">
+        <i class="fa-solid fa-pen"></i>
+        </button>
+        <button onclick="event.stopPropagation(); deleteFolder('${f.id}')" title="Excluir" class="text-zinc-500 hover:text-red-600 dark:hover:text-red-400 text-[10px] p-0.5">
+        <i class="fa-solid fa-trash"></i>
+        </button>
+        </div>
+        </div>
+      `;
+      if (hasChildren && isExpanded) {
+        buildFolderTree(children, level + 1);
+      }
+    });
+  }
+  buildFolderTree(rootFolders);
+  foldersList.innerHTML = html;
+}
+function updateFolderSelects(currentEditingId = null) {
+  parentFolderSelect.innerHTML = '<option value="root">Nenhuma (Pasta Raiz)</option>';
+  refFolderSelect.innerHTML = '<option value="all">Geral (Sem pasta)</option>';
+  batchFolderSelect.innerHTML = '<option value="all">Geral (Sem pasta)</option>';
+  folders.forEach(f => {
+    if (f.id !== currentEditingId) {
+      const prefix = f.parentId ? '-' : '';
+      parentFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
+    }
+    const prefix = f.parentId ? '-' : '';
+    refFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
+    batchFolderSelect.innerHTML += `<option value="${f.id}">${prefix}${f.name}</option>`;
+  });
+}
+function selectReference(id) {
+  selectedRefId = id;
+  document.querySelectorAll('.ref-card').forEach(el => el.classList.remove('card-selected'));
+  const activeCard = document.getElementById(`ref-card-${id}`);
+  if (activeCard) activeCard.classList.add('card-selected');
+  updateInspector(id);
+  if (!isRightSidebarOpen && window.innerWidth > 640) {
+    toggleRightSidebar();
+  }
+}
+function updateInspector(id) {
+  const item = references.find(r => r.id === id);
+  if (!item) {
+    clearInspector();
+    return;
+  }
+  const previewImg = getPreviewImage(item.url);
+  const domain = getDomainFromUrl(item.url);
+  const folderObj = folders.find(f => f.id === item.folderId);
+  const folderName = folderObj ? folderObj.name : 'Geral';
+  const dateStr = item.createdAt ? new Date(item.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : '-';
+  document.getElementById('inspectorImage').src = previewImg;
+  document.getElementById('inspectorTitle').innerText = item.title || domain;
+  document.getElementById('inspectorUrl').href = item.url;
+  document.getElementById('inspectorDomain').innerText = domain;
+  document.getElementById('inspectorDate').innerText = dateStr;
+  document.getElementById('inspectorFolder').innerText = folderName;
+  document.getElementById('inspectorNotes').innerText = item.notes || 'Nenhuma anotação adicionada.';
+  const tagsContainer = document.getElementById('inspectorTags');
+  if (item.tags && item.tags.length > 0) {
+    tagsContainer.innerHTML = item.tags.map(t => `<span class="bg-zinc-300/60 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-300 text-[10px] px-2 py-0.5 rounded">#${t}</span>`).join('');
+  } else {
+    tagsContainer.innerHTML = '<span class="text-zinc-400 dark:text-zinc-600 text-[10px]">Sem tags</span>';
+  }
+  document.getElementById('btnInspectorOpen').href = item.url;
+  document.getElementById('btnInspectorZoom').onclick = () => openImageViewer(previewImg, item.title || domain);
+  document.getElementById('btnInspectorEdit').onclick = () => openRefModal(item.id);
+  document.getElementById('btnInspectorDelete').onclick = () => deleteRef(item.id);
+  inspectorEmptyState.classList.add('hidden');
+  inspectorContent.classList.remove('hidden');
+}
+function clearInspector() {
+  selectedRefId = null;
+  inspectorContent.classList.add('hidden');
+  inspectorEmptyState.classList.remove('hidden');
+}
+function renderReferences() {
+  const filtered = getFilteredReferences();
+  if (filtered.length === 0) {
+    referencesGrid.innerHTML = '';
+    emptyState.classList.remove('hidden');
+    clearInspector();
+    return;
+  }
+  emptyState.classList.add('hidden');
+  referencesGrid.innerHTML = filtered.map(r => {
+    const previewImg = getPreviewImage(r.url);
+    const domain = getDomainFromUrl(r.url);
+    const isSelected = selectedRefId === r.id;
+    return `
+      <div id="ref-card-${r.id}" onclick="selectReference('${r.id}')"
+      class="ref-card bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden hover:border-zinc-400 dark:hover:border-zinc-700 transition-all cursor-pointer group flex flex-col justify-between shadow-sm ${isSelected ? 'card-selected' : ''}">
+      <div>
+      <div class="h-36 bg-zinc-100 dark:bg-zinc-950 relative overflow-hidden flex items-center justify-center border-b border-zinc-200 dark:border-zinc-800/60">
+      <img src="${previewImg}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-regular fa-image text-zinc-400 dark:text-zinc-700 text-2xl\\'></i>';">
+      </div>
+      <div class="p-2.5">
+      <h4 class="font-medium text-zinc-800 dark:text-zinc-200 text-xs line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${r.title || domain}</h4>
+      <p class="text-[10px] text-zinc-400 dark:text-zinc-500 truncate mt-0.5">${domain}</p>
+      </div>
+      </div>
+      </div>
+    `;
+  }).join('');
+}
+function renderMoodboard() {
+  const filtered = getFilteredReferences();
+  moodboardCanvas.innerHTML = '';
+  if (filtered.length === 0) {
+    moodboardCanvas.innerHTML = `
+      <div class="flex flex-col items-center justify-center h-full text-center text-zinc-400 dark:text-zinc-600">
+      <i class="fa-solid fa-cubes text-5xl mb-3 opacity-30"></i>
+      <p class="font-medium text-zinc-600 dark:text-zinc-400 text-xs">Moodboard Vazio</p>
+      </div>
+    `;
+    return;
+  }
+  filtered.forEach((r, index) => {
+    const previewImg = getPreviewImage(r.url);
+    const card = document.createElement('div');
+    card.className = "moodboard-card absolute bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden group shadow-lg cursor-grab";
+    card.id = `mb-card-${r.id}`;
+    const posX = (r.moodboard && r.moodboard.x !== undefined) ? r.moodboard.x : (20 + (index % 4) * 230);
+    const posY = (r.moodboard && r.moodboard.y !== undefined) ? r.moodboard.y : (20 + Math.floor(index / 4) * 230);
+    const width = (r.moodboard && r.moodboard.width) ? r.moodboard.width : 210;
+    card.style.left = `${posX}px`;
+    card.style.top = `${posY}px`;
+    card.style.width = `${width}px`;
+    card.innerHTML = `
+      <div class="relative bg-zinc-100 dark:bg-zinc-950">
+      <img src="${previewImg}" class="w-full h-auto object-cover max-h-80 pointer-events-none" onerror="this.src='https://placehold.co/300x200/e4e4e7/71717a?text=Preview'">
+      <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <button onclick="openImageViewer('${previewImg}', '${(r.title || '').replace(/'/g, "\\'")}')" class="bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 p-1 rounded text-[10px] shadow-sm"><i class="fa-solid fa-expand"></i></button>
+      </div>
+      </div>
+      <div class="p-2">
+      <p class="text-xs font-medium text-zinc-800 dark:text-zinc-300 truncate">${r.title}</p>
+      </div>
+    `;
+    card.onclick = () => selectReference(r.id);
+    makeDraggableAndResizable(card, r.id, posX, posY, width);
+    moodboardCanvas.appendChild(card);
+  });
+}
+function makeDraggableAndResizable(elmnt, refId, initialX, initialY, initialWidth) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  let currentX = initialX;
+  let currentY = initialY;
+  elmnt.onmousedown = dragMouseDown;
+  function dragMouseDown(e) {
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.tagName === 'I') return;
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    elmnt.classList.add('dragging');
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+  function elementDrag(e) {
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    currentX = Math.max(0, elmnt.offsetLeft - pos1);
+    currentY = Math.max(0, elmnt.offsetTop - pos2);
+    elmnt.style.top = currentY + "px";
+    elmnt.style.left = currentX + "px";
+  }
+  async function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+    elmnt.classList.remove('dragging');
+    try {
+      await db.collection('references').doc(refId).update({
+        moodboard: { x: currentX, y: currentY, width: initialWidth }
+      });
+    } catch (err) {
+      console.error("Erro ao salvar posição:", err);
+    }
+  }
+}
+// ================= SESSÃO DE PRÁTICA TIMED (GESTURE DRAWING) =================
+function openPracticeModal() {
+  const folderSelect = document.getElementById('practiceFolderSelect');
+  const tagSelect = document.getElementById('practiceTagSelect');
+  folderSelect.innerHTML = folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+  const allTags = new Set();
+  references.forEach(r => { if (r.tags) r.tags.forEach(t => allTags.add(t)); });
+  tagSelect.innerHTML = Array.from(allTags).map(t => `<option value="${t}">#${t}</option>`).join('');
+  togglePracticeSourceOptions();
+  modalPractice.classList.replace('hidden', 'flex');
+}
+function togglePracticeSourceOptions() {
+  const type = document.getElementById('practiceSourceType').value;
+  const folderContainer = document.getElementById('practiceFolderContainer');
+  const tagContainer = document.getElementById('practiceTagContainer');
+  folderContainer.classList.toggle('hidden', type !== 'folder');
+  tagContainer.classList.toggle('hidden', type !== 'tag');
+}
+document.getElementById('practiceForm').onsubmit = (e) => {
+  e.preventDefault();
+  const sourceType = document.getElementById('practiceSourceType').value;
+  const folderVal = document.getElementById('practiceFolderSelect').value;
+  const tagVal = document.getElementById('practiceTagSelect').value;
+  const randomize = document.getElementById('practiceRandomize').checked;
+  practiceTimePerImage = parseInt(document.getElementById('practiceTimeSelect').value, 10);
+  let items = [...references];
+  if (sourceType === 'folder') {
+    const validFolderIds = getFolderAndSubfolderIds(folderVal);
+    items = items.filter(r => validFolderIds.includes(r.folderId));
+  } else if (sourceType === 'tag') {
+    items = items.filter(r => r.tags && r.tags.includes(tagVal));
+  }
+  if (items.length === 0) {
+    alert('Nenhuma imagem encontrada com o filtro selecionado.');
+    return;
+  }
+  if (randomize) {
+    items.sort(() => Math.random() - 0.5);
+  }
+  practiceQueue = items;
+  currentPracticeIndex = 0;
+  modalPractice.classList.replace('flex', 'hidden');
+  document.getElementById('practiceView').classList.replace('hidden', 'flex');
+  loadPracticeImage();
+};
+function loadPracticeImage() {
+  if (practiceQueue.length === 0) return;
+  const currentItem = practiceQueue[currentPracticeIndex];
+  const previewImg = getPreviewImage(currentItem.url);
+  const imgEl = document.getElementById('practiceImage');
+  imgEl.style.opacity = '0';
+  setTimeout(() => {
+    imgEl.src = previewImg;
+    imgEl.style.opacity = '1';
+  }, 150);
+  document.getElementById('practiceCurrentTitle').innerText = currentItem.title || getDomainFromUrl(currentItem.url);
+  document.getElementById('practiceCounter').innerText = `${currentPracticeIndex + 1} / ${practiceQueue.length}`;
+  resetPracticeTimer();
+}
+function resetPracticeTimer() {
+  clearInterval(practiceTimerInterval);
+  practiceSecondsLeft = practiceTimePerImage;
+  isPracticePaused = false;
+  updatePauseButtonUI();
+  updateTimerDisplay();
+  practiceTimerInterval = setInterval(() => {
+    if (!isPracticePaused) {
+      practiceSecondsLeft--;
+      updateTimerDisplay();
+      if (practiceSecondsLeft <= 0) {
+        nextPracticeImage();
+      }
+    }
+  }, 1000);
+}
+function updateTimerDisplay() {
+  const minutes = Math.floor(practiceSecondsLeft / 60);
+  const seconds = practiceSecondsLeft % 60;
+  document.getElementById('practiceTimerDisplay').innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+function togglePausePractice() {
+  isPracticePaused = !isPracticePaused;
+  updatePauseButtonUI();
+}
+function updatePauseButtonUI() {
+  const btn = document.getElementById('btnPausePractice');
+  if (isPracticePaused) {
+    btn.innerHTML = '<i class="fa-solid fa-play text-sm ml-0.5"></i>';
+    btn.classList.replace('bg-amber-600', 'bg-emerald-600');
+    btn.classList.replace('hover:bg-amber-500', 'hover:bg-emerald-500');
+  } else {
+    btn.innerHTML = '<i class="fa-solid fa-pause text-sm"></i>';
+    btn.classList.replace('bg-emerald-600', 'bg-amber-600');
+    btn.classList.replace('hover:bg-emerald-500', 'hover:bg-amber-500');
+  }
+}
+function nextPracticeImage() {
+  if (currentPracticeIndex < practiceQueue.length - 1) {
+    currentPracticeIndex++;
+    loadPracticeImage();
+  } else {
+    alert('Você concluiu todas as imagens da sessão de prática!');
+    stopPracticeSession();
+  }
+}
+function prevPracticeImage() {
+  if (currentPracticeIndex > 0) {
+    currentPracticeIndex--;
+    loadPracticeImage();
+  }
+}
+function stopPracticeSession() {
+  clearInterval(practiceTimerInterval);
+  document.getElementById('practiceView').classList.replace('flex', 'hidden');
+}
+// Atalhos de Teclado no Modo Prática
+window.addEventListener('keydown', (e) => {
+  const practiceView = document.getElementById('practiceView');
+  if (!practiceView.classList.contains('hidden')) {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      togglePausePractice();
+    } else if (e.code === 'ArrowRight') {
+      nextPracticeImage();
+    } else if (e.code === 'ArrowLeft') {
+      prevPracticeImage();
+    } else if (e.code === 'Escape') {
+      stopPracticeSession();
+    }
+  }
+});
+// Exportação & Importação
+function downloadFile(content, fileName, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+document.getElementById('btnExportJSON').onclick = () => {
+  const data = { folders, references, exportedAt: new Date().toISOString() };
+  downloadFile(JSON.stringify(data, null, 2), `refhub-backup-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
+};
+document.getElementById('btnExportCSV').onclick = () => {
+  if (references.length === 0) return alert('Nenhuma referência para exportar.');
+  const folderMap = {};
+  folders.forEach(f => folderMap[f.id] = f.name);
+  let csvContent = '\uFEFFTitle, URL, Folder, Tags, Notes\n';
+  references.forEach(r => {
+    csvContent += `"${(r.title || '').replace(/"/g, '""')}","${(r.url || '').replace(/"/g, '""')}","${(folderMap[r.folderId] || 'Geral').replace(/"/g, '""')}","${(r.tags ? r.tags.join(', ') : '').replace(/"/g, '""')}","${(r.notes || '').replace(/"/g, '""')}"\n`;
+  });
+  downloadFile(csvContent, `refhub-export-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
+};
+const btnTriggerImport = document.getElementById('btnTriggerImport');
+const importJsonInput = document.getElementById('importJsonInput');
+btnTriggerImport.onclick = () => importJsonInput.click();
+importJsonInput.onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file || !currentUser) return;
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    try {
+      const importedData = JSON.parse(event.target.result);
+      if (!importedData.references && !importedData.folders) return alert('Formato inválido.');
+      btnTriggerImport.disabled = true;
+      const batch = db.batch();
+      const folderIdMap = {};
+      if (importedData.folders) {
+        importedData.folders.forEach(f => {
+          const newDocRef = db.collection('folders').doc();
+          folderIdMap[f.id] = newDocRef.id;
+          batch.set(newDocRef, { name: f.name, parentId: f.parentId ? (folderIdMap[f.parentId] || null) : null, userId: currentUser.uid, createdAt: new Date() });
+        });
+      }
+      if (importedData.references) {
+        importedData.references.forEach(r => {
+          const newDocRef = db.collection('references').doc();
+          batch.set(newDocRef, {
+            title: r.title || getDomainFromUrl(r.url),
+            url: r.url,
+            folderId: folderIdMap[r.folderId] || 'all',
+            notes: r.notes || '',
+            tags: r.tags || [],
+            moodboard: r.moodboard || null,
+            userId: currentUser.uid,
+            createdAt: new Date()
+          });
+        });
+      }
+      await batch.commit();
+      alert('Backup importado com sucesso!');
+      modalBackup.classList.replace('flex', 'hidden');
+    } catch (err) {
+      alert('Erro ao importar backup.');
+    } finally {
+      btnTriggerImport.disabled = false;
+      importJsonInput.value = '';
+    }
+  };
+  reader.readAsText(file);
+};
+searchInput.addEventListener('input', renderActiveView);
+</script>
+</body>
+</html>
