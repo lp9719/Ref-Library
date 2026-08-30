@@ -287,7 +287,8 @@
       </div>
 
       <!-- Conteúdo do Inspector -->
-      <div id="inspectorContent" class="hidden p-4 space-y-5 text-xs">
+            <!-- Conteúdo do Inspector -->
+      <div id="inspectorContent" class="hidden p-4 space-y-4 text-xs">
         
         <!-- Preview em miniatura ampliada -->
         <div class="relative bg-white dark:bg-zinc-950 rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-800 flex items-center justify-center group shadow-sm">
@@ -296,6 +297,34 @@
             <i class="fa-solid fa-expand"></i> Ampliar
           </button>
         </div>
+
+        <!-- Formulário de Edição -->
+        <form id="editRefForm" class="space-y-3" onsubmit="saveRefEdits(event)">
+          <input type="hidden" id="editRefId">
+
+          <div>
+            <label class="block text-zinc-500 dark:text-zinc-400 font-semibold mb-1 uppercase text-[10px] tracking-wider">Título</label>
+            <input type="text" id="editRefTitle" required class="w-full px-2.5 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-zinc-500 dark:text-zinc-400 font-semibold mb-1 uppercase text-[10px] tracking-wider">Tags (separadas por vírgula)</label>
+            <input type="text" id="editRefTags" placeholder="design, 3d, ui" class="w-full px-2.5 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-zinc-500 dark:text-zinc-400 font-semibold mb-1 uppercase text-[10px] tracking-wider">Anotações / Descrição</label>
+            <textarea id="editRefNotes" rows="4" class="w-full p-2.5 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></textarea>
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 rounded transition-colors text-xs shadow-sm">
+              Salvar Alterações
+            </button>
+          </div>
+        </form>
+
+      </div>
 
         <!-- Título e Domínio -->
         <div>
@@ -1649,6 +1678,74 @@
     };
 
     searchInput.addEventListener('input', renderActiveView);
+  </script>        <!-- Ações do Asset -->
+        <div class="pt-4 flex gap-2">
+          <a id="btnInspectorOpen" href="" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-1.5 rounded flex items-center justify-center gap-1.5 transition-colors">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir
+          </a>
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- ================= AQUI FICA O PASSO 2 (TAG SCRIPT) ================= -->
+  <script>
+    // 1. Preenche os campos do painel quando um card for selecionado
+    function populateInspectorForm(ref) {
+      if (!ref) return;
+
+      document.getElementById('editRefId').value = ref.id || '';
+      document.getElementById('editRefTitle').value = ref.title || '';
+      document.getElementById('editRefTags').value = Array.isArray(ref.tags) ? ref.tags.join(', ') : (ref.tags || '');
+      document.getElementById('editRefNotes').value = ref.notes || ref.description || '';
+      
+      if (document.getElementById('inspectorImage')) {
+        document.getElementById('inspectorImage').src = ref.imageUrl || ref.url || ref.src || '';
+      }
+
+      document.getElementById('inspectorEmptyState').classList.add('hidden');
+      document.getElementById('inspectorContent').classList.remove('hidden');
+    }
+
+    // 2. Salva as edições do título, tags e anotações
+    function saveRefEdits(event) {
+      event.preventDefault();
+      
+      const id = document.getElementById('editRefId').value;
+      if (!id) return;
+
+      // Busca o item no array de referências existente
+      const refIndex = references.findIndex(r => r.id === id);
+
+      if (refIndex !== -1) {
+        // Atualiza as propriedades no objeto
+        references[refIndex].title = document.getElementById('editRefTitle').value.trim();
+        
+        const rawTags = document.getElementById('editRefTags').value;
+        references[refIndex].tags = rawTags.split(',')
+          .map(t => t.trim())
+          .filter(t => t.length > 0);
+        
+        references[refIndex].notes = document.getElementById('editRefNotes').value.trim();
+
+        // Persiste no localStorage
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('refhub_references', JSON.stringify(references));
+        }
+
+        // Recarrega a interface
+        if (typeof renderGrid === 'function') renderGrid();
+        if (typeof renderReferences === 'function') renderReferences();
+        if (typeof renderTags === 'function') renderTags();
+        if (typeof renderTagsSidebar === 'function') renderTagsSidebar();
+      }
+    }
   </script>
+
+</body>
+</html>
+
 </body>
 </html>
