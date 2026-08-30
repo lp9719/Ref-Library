@@ -301,7 +301,7 @@ Acessar Link
 <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
 <i class="fa-solid fa-stopwatch text-amber-500"></i> Prática Timed (Gesture Drawing)
 </h3>
-<button id="btnClosePracticeModal" class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-lg">&times;</button>
+<button id="btnClosePracticeModal" class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-lg">×</button>
 </div>
 <form id="practiceForm" class="space-y-4">
 <div>
@@ -322,14 +322,42 @@ Acessar Link
 </div>
 <div>
 <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Tempo por Imagem</label>
-<select id="practiceTimeSelect" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+<select id="practiceTimeSelect" onchange="toggleCustomPracticeTime()" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
 <option value="30">30 segundos</option>
 <option value="45">45 segundos</option>
 <option value="60" selected>1 minuto</option>
 <option value="120">2 minutos</option>
 <option value="300">5 minutos</option>
 <option value="600">10 minutos</option>
+<option value="custom">Personalizado</option>
 </select>
+</div>
+<div id="practiceCustomTimeContainer" class="hidden grid grid-cols-2 gap-2">
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Minutos</label>
+<input type="number" id="practiceCustomMinutes" min="0" max="999" value="1" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+</div>
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Segundos</label>
+<input type="number" id="practiceCustomSeconds" min="0" max="59" value="0" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+</div>
+</div>
+<div>
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Intervalo entre Imagens</label>
+<select id="practiceIntervalSelect" onchange="toggleCustomPracticeInterval()" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+<option value="0" selected>Sem intervalo</option>
+<option value="5">5 segundos</option>
+<option value="10">10 segundos</option>
+<option value="15">15 segundos</option>
+<option value="30">30 segundos</option>
+<option value="60">1 minuto</option>
+<option value="120">2 minutos</option>
+<option value="custom">Personalizado</option>
+</select>
+</div>
+<div id="practiceCustomIntervalContainer" class="hidden">
+<label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Intervalo personalizado (segundos)</label>
+<input type="number" id="practiceCustomInterval" min="0" max="3600" value="15" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
 </div>
 <div class="flex items-center gap-2 pt-1">
 <input type="checkbox" id="practiceRandomize" checked class="rounded bg-zinc-950 border-zinc-800 text-amber-500 focus:ring-0">
@@ -385,7 +413,7 @@ Acessar Link
 <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
 <i class="fa-solid fa-floppy-disk text-blue-500"></i> Backup & Exportação
 </h3>
-<button id="btnCloseBackupModal" class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-lg">&times;</button>
+<button id="btnCloseBackupModal" class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-lg">×</button>
 </div>
 <div>
 <p class="font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Exportar Seus Dados</p>
@@ -471,7 +499,8 @@ Acessar Link
 <form id="batchForm" class="space-y-3">
 <div>
 <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">URLs (uma por linha)</label>
-<textarea id="batchUrls" rows="6" required placeholder="https://site1.com/imagem1.jpg&#10;https://site2.com/artigo" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 font-mono text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></textarea>
+<textarea id="batchUrls" rows="6" required placeholder="https://site1.com/imagem1.jpg
+https://site2.com/artigo" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2 font-mono text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500"></textarea>
 </div>
 <div>
 <label class="block font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Tags para todos</label>
@@ -492,7 +521,7 @@ Acessar Link
 <div id="imageViewerModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center p-4 z-50 transition-opacity" onclick="closeImageViewer()">
 <div class="relative max-w-5xl max-h-[95vh] flex flex-col items-center" onclick="event.stopPropagation()">
 <button onclick="closeImageViewer()" class="absolute -top-10 right-0 text-zinc-400 hover:text-white text-xl font-bold bg-zinc-800/80 rounded-full w-8 h-8 flex items-center justify-center">
-&times;
+×
 </button>
 <img id="imageViewerSrc" src="" alt="Ampliada" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain bg-zinc-950">
 <div class="flex items-center justify-between w-full mt-3 px-2 text-xs">
@@ -538,6 +567,10 @@ let currentPracticeIndex = 0;
 let practiceTimerInterval = null;
 let practiceSecondsLeft = 0;
 let practiceTimePerImage = 60;
+let practiceIntervalSeconds = 0;
+let practiceIntervalTimer = null;
+let isPracticeInInterval = false;
+let audioContext = null;
 let isPracticePaused = false;
 let unsubscribeFolders = null;
 let unsubscribeReferences = null;
@@ -804,7 +837,6 @@ document.getElementById('btnSaveFolder').onclick = async () => {
   document.getElementById('editingFolderId').value = '';
   modalFolder.classList.replace('flex', 'hidden');
 };
-
 async function deleteFolder(folderId) {
   if (confirm('Deseja excluir esta pasta?')) {
     await db.collection('folders').doc(folderId).delete();
@@ -828,7 +860,6 @@ function getPreviewImage(url) {
     return url;
   }
 }
-
 // LÓGICA DE ABRIR E SALVAR O MODAL DE REFERÊNCIA (ADICIONAR E EDITAR)
 function openRefModal(refId = null) {
   const modalTitle = document.getElementById('modalRefTitle');
@@ -837,9 +868,7 @@ function openRefModal(refId = null) {
   const titleInput = document.getElementById('refTitle');
   const tagsInput = document.getElementById('refTags');
   const notesInput = document.getElementById('refNotes');
-  
   updateFolderSelects();
-  
   if (refId) {
     const item = references.find(r => r.id === refId);
     if (item) {
@@ -857,21 +886,17 @@ function openRefModal(refId = null) {
     document.getElementById('refForm').reset();
     refFolderSelect.value = currentFolderId !== 'all' ? currentFolderId : 'all';
   }
-  
   modalRef.classList.replace('hidden', 'flex');
 }
-
 document.getElementById('refForm').onsubmit = async (e) => {
   e.preventDefault();
   if (!currentUser) return;
-  
   const editingId = document.getElementById('editingRefId').value;
   const url = document.getElementById('refUrl').value.trim();
   let title = document.getElementById('refTitle').value.trim() || getDomainFromUrl(url);
   const rawTags = document.getElementById('refTags').value;
   const folderId = refFolderSelect.value;
   const notes = document.getElementById('refNotes').value;
-  
   const dataPayload = {
     title,
     url,
@@ -879,7 +904,6 @@ document.getElementById('refForm').onsubmit = async (e) => {
     notes,
     tags: parseTags(rawTags)
   };
-  
   if (editingId) {
     await db.collection('references').doc(editingId).update(dataPayload);
   } else {
@@ -889,12 +913,10 @@ document.getElementById('refForm').onsubmit = async (e) => {
       createdAt: new Date()
     });
   }
-  
   e.target.reset();
   document.getElementById('editingRefId').value = '';
   modalRef.classList.replace('flex', 'hidden');
 };
-
 document.getElementById('batchForm').onsubmit = async (e) => {
   e.preventDefault();
   if (!currentUser) return;
@@ -925,7 +947,6 @@ document.getElementById('batchForm').onsubmit = async (e) => {
   e.target.reset();
   modalBatchRef.classList.replace('flex', 'hidden');
 };
-
 async function deleteRef(id) {
   if (confirm('Deseja realmente excluir esta referência?')) {
     await db.collection('references').doc(id).delete();
@@ -1245,6 +1266,8 @@ function openPracticeModal() {
   references.forEach(r => { if (r.tags) r.tags.forEach(t => allTags.add(t)); });
   tagSelect.innerHTML = Array.from(allTags).map(t => `<option value="${t}">#${t}</option>`).join('');
   togglePracticeSourceOptions();
+  toggleCustomPracticeTime();
+  toggleCustomPracticeInterval();
   modalPractice.classList.replace('hidden', 'flex');
 }
 function togglePracticeSourceOptions() {
@@ -1254,13 +1277,36 @@ function togglePracticeSourceOptions() {
   folderContainer.classList.toggle('hidden', type !== 'folder');
   tagContainer.classList.toggle('hidden', type !== 'tag');
 }
+function toggleCustomPracticeTime() {
+  const select = document.getElementById('practiceTimeSelect');
+  const container = document.getElementById('practiceCustomTimeContainer');
+  container.classList.toggle('hidden', select.value !== 'custom');
+}
+function toggleCustomPracticeInterval() {
+  const select = document.getElementById('practiceIntervalSelect');
+  const container = document.getElementById('practiceCustomIntervalContainer');
+  container.classList.toggle('hidden', select.value !== 'custom');
+}
+function getPracticeTimeInSeconds() {
+  const select = document.getElementById('practiceTimeSelect');
+  if (select.value !== 'custom') return parseInt(select.value, 10);
+  const minutes = parseInt(document.getElementById('practiceCustomMinutes').value, 10) || 0;
+  const seconds = parseInt(document.getElementById('practiceCustomSeconds').value, 10) || 0;
+  return Math.max(1, (minutes * 60) + seconds);
+}
+function getPracticeIntervalInSeconds() {
+  const select = document.getElementById('practiceIntervalSelect');
+  if (select.value !== 'custom') return parseInt(select.value, 10);
+  return Math.max(0, parseInt(document.getElementById('practiceCustomInterval').value, 10) || 0);
+}
 document.getElementById('practiceForm').onsubmit = (e) => {
   e.preventDefault();
   const sourceType = document.getElementById('practiceSourceType').value;
   const folderVal = document.getElementById('practiceFolderSelect').value;
   const tagVal = document.getElementById('practiceTagSelect').value;
   const randomize = document.getElementById('practiceRandomize').checked;
-  practiceTimePerImage = parseInt(document.getElementById('practiceTimeSelect').value, 10);
+  practiceTimePerImage = getPracticeTimeInSeconds();
+  practiceIntervalSeconds = getPracticeIntervalInSeconds();
   let items = [...references];
   if (sourceType === 'folder') {
     const validFolderIds = getFolderAndSubfolderIds(folderVal);
@@ -1272,17 +1318,21 @@ document.getElementById('practiceForm').onsubmit = (e) => {
     alert('Nenhuma imagem encontrada com o filtro selecionado.');
     return;
   }
-  if (randomize) {
-    items.sort(() => Math.random() - 0.5);
-  }
+  if (randomize) items.sort(() => Math.random() - 0.5);
   practiceQueue = items;
   currentPracticeIndex = 0;
+  isPracticeInInterval = false;
+  if (!audioContext) {
+    try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch (err) {}
+  }
   modalPractice.classList.replace('flex', 'hidden');
   document.getElementById('practiceView').classList.replace('hidden', 'flex');
   loadPracticeImage();
 };
 function loadPracticeImage() {
   if (practiceQueue.length === 0) return;
+  clearInterval(practiceIntervalTimer);
+  isPracticeInInterval = false;
   const currentItem = practiceQueue[currentPracticeIndex];
   const previewImg = getPreviewImage(currentItem.url);
   const imgEl = document.getElementById('practiceImage');
@@ -1297,16 +1347,25 @@ function loadPracticeImage() {
 }
 function resetPracticeTimer() {
   clearInterval(practiceTimerInterval);
+  clearInterval(practiceIntervalTimer);
   practiceSecondsLeft = practiceTimePerImage;
   isPracticePaused = false;
+  isPracticeInInterval = false;
   updatePauseButtonUI();
   updateTimerDisplay();
   practiceTimerInterval = setInterval(() => {
-    if (!isPracticePaused) {
+    if (!isPracticePaused && !isPracticeInInterval) {
       practiceSecondsLeft--;
       updateTimerDisplay();
+      if (practiceSecondsLeft > 0 && practiceSecondsLeft <= 10) playPracticeBeep();
       if (practiceSecondsLeft <= 0) {
-        nextPracticeImage();
+        clearInterval(practiceTimerInterval);
+        playPracticeBeep(true);
+        if (practiceIntervalSeconds > 0 && currentPracticeIndex < practiceQueue.length - 1) {
+          startPracticeInterval();
+        } else {
+          nextPracticeImage();
+        }
       }
     }
   }, 1000);
@@ -1315,6 +1374,52 @@ function updateTimerDisplay() {
   const minutes = Math.floor(practiceSecondsLeft / 60);
   const seconds = practiceSecondsLeft % 60;
   document.getElementById('practiceTimerDisplay').innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+function startPracticeInterval() {
+  clearInterval(practiceIntervalTimer);
+  isPracticeInInterval = true;
+  isPracticePaused = false;
+  updatePauseButtonUI();
+  let intervalLeft = practiceIntervalSeconds;
+  showPracticeIntervalDisplay(intervalLeft);
+  practiceIntervalTimer = setInterval(() => {
+    if (!isPracticePaused) {
+      intervalLeft--;
+      showPracticeIntervalDisplay(intervalLeft);
+      if (intervalLeft > 0 && intervalLeft <= 10) playPracticeBeep();
+      if (intervalLeft <= 0) {
+        clearInterval(practiceIntervalTimer);
+        playPracticeBeep(true);
+        isPracticeInInterval = false;
+        nextPracticeImage();
+      }
+    }
+  }, 1000);
+}
+function showPracticeIntervalDisplay(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  document.getElementById('practiceTimerDisplay').innerText = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+  document.getElementById('practiceCurrentTitle').innerText = 'Intervalo — prepare-se para a próxima imagem';
+}
+function playPracticeBeep(finalBeep = false) {
+  try {
+    if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioContext.state === 'suspended') audioContext.resume();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.value = finalBeep ? 880 : 660;
+    gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.18, audioContext.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + (finalBeep ? 0.35 : 0.15));
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + (finalBeep ? 0.35 : 0.15));
+  } catch (err) {
+    console.warn('Não foi possível reproduzir o sinal sonoro:', err);
+  }
 }
 function togglePausePractice() {
   isPracticePaused = !isPracticePaused;
@@ -1333,6 +1438,9 @@ function updatePauseButtonUI() {
   }
 }
 function nextPracticeImage() {
+  clearInterval(practiceTimerInterval);
+  clearInterval(practiceIntervalTimer);
+  isPracticeInInterval = false;
   if (currentPracticeIndex < practiceQueue.length - 1) {
     currentPracticeIndex++;
     loadPracticeImage();
@@ -1342,6 +1450,9 @@ function nextPracticeImage() {
   }
 }
 function prevPracticeImage() {
+  clearInterval(practiceTimerInterval);
+  clearInterval(practiceIntervalTimer);
+  isPracticeInInterval = false;
   if (currentPracticeIndex > 0) {
     currentPracticeIndex--;
     loadPracticeImage();
@@ -1349,6 +1460,8 @@ function prevPracticeImage() {
 }
 function stopPracticeSession() {
   clearInterval(practiceTimerInterval);
+  clearInterval(practiceIntervalTimer);
+  isPracticeInInterval = false;
   document.getElementById('practiceView').classList.replace('flex', 'hidden');
 }
 // Atalhos de Teclado no Modo Prática
@@ -1367,6 +1480,7 @@ window.addEventListener('keydown', (e) => {
     }
   }
 });
+
 // Exportação & Importação
 function downloadFile(content, fileName, mimeType) {
   const blob = new Blob([content], { type: mimeType });
