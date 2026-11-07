@@ -1,0 +1,39 @@
+REFHUB — RECEBER COMPARTILHAMENTOS DO ANDROID
+================================================
+
+Arquivos incluídos
+- index.html: versão completa baseada no arquivo enviado.
+- sw.js: Service Worker atualizado para receber o compartilhamento.
+- manifest.json: manifesto atualizado com share_target.
+- LEIA-ME.txt: estas instruções.
+
+O QUE FOI IMPLEMENTADO
+- O RefHub passa a poder aparecer como destino de compartilhamento no Android/Chrome.
+- Recebe URLs/texto e arquivos de imagem que o aplicativo de origem realmente enviar.
+- Abre a importação em lote existente para revisão.
+- Não salva nada automaticamente: você escolhe pasta/tags e confirma em "Salvar Todos".
+- Mantém a rotina de captura da extensão RefHub Capture sem alterar suas funções.
+
+PROTEÇÃO DOS DADOS EXISTENTES
+- O banco original "refhub-local-assets" e sua store "images" não são atualizados nem recriados.
+- Os compartilhamentos pendentes são guardados em um banco separado chamado "refhub-share-inbox".
+- A limpeza do cache do Service Worker remove apenas caches cujo nome começa com "refhub-", sem apagar caches de outros aplicativos no mesmo domínio.
+
+LIMITAÇÕES
+- Pinterest e outros aplicativos podem compartilhar somente o link do Pin/página, não o arquivo original da imagem.
+- O RefHub não consegue forçar o aplicativo de origem a enviar uma imagem que ele não disponibiliza no menu Compartilhar.
+- O Share Target é suportado pelo Chrome/Android; outros navegadores, como Quetta, podem não oferecer o mesmo suporte.
+
+INSTALAÇÃO SEGURA
+1. Antes de qualquer alteração, baixe/guarde cópias dos três arquivos atuais do GitHub.
+2. Substitua no repositório os três arquivos pelos arquivos deste pacote: index.html, sw.js e manifest.json.
+3. Faça o commit/publicação no GitHub Pages somente quando estiver pronta para testar.
+4. No Android, abra o RefHub instalado pelo Chrome e aguarde a atualização do Service Worker e do manifesto.
+5. Se o RefHub não aparecer imediatamente no menu Compartilhar, feche o PWA, abra-o novamente pelo Chrome e aguarde a atualização em segundo plano.
+6. Teste primeiro compartilhando um link simples de uma página. Depois teste uma imagem enviada como arquivo por um aplicativo.
+7. Ao receber, confira o conteúdo, escolha pasta e tags e toque em "Salvar Todos".
+
+OBSERVAÇÃO
+O compartilhamento abre o formulário Em Lote já existente. Links são importados como referências com o título enviado pelo aplicativo, quando disponível; se não houver título, o RefHub usa o domínio como título. Imagens recebidas como arquivo são salvas localmente neste dispositivo.
+
+Se houver qualquer comportamento inesperado, restaure os três arquivos originais no GitHub Pages e reabra o PWA.

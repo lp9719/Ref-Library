@@ -1066,6 +1066,122 @@ async function saveLocalAsset(id, file) {
     tx.onerror = () => reject(tx.error);
   });
 }
+// ================= COMPARTILHAMENTO ANDROID (WEB SHARE TARGET) =================
+const androidShareTitles = new Map();
+
+let androidShareDBPromise = null;
+function getAndroidShareDB() {
+  if (androidShareDBPromise) return androidShareDBPromise;
+  androidShareDBPromise = new Promise((resolve, reject) => {
+    const request = indexedDB.open('refhub-share-inbox', 1);
+    request.onupgradeneeded = () => {
+      const dbShare = request.result;
+      if (!dbShare.objectStoreNames.contains('shares')) dbShare.createObjectStore('shares', { keyPath: 'id' });
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+  return androidShareDBPromise;
+}
+
+async function getPendingAndroidShare(id) {
+  const dbLocal = await getAndroidShareDB();
+  return new Promise((resolve, reject) => {
+    const tx = dbLocal.transaction('shares', 'readonly');
+    const request = tx.objectStore('shares').get(id);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function deletePendingAndroidShare(id) {
+  const dbLocal = await getAndroidShareDB();
+  return new Promise((resolve, reject) => {
+    const tx = dbLocal.transaction('shares', 'readwrite');
+    tx.objectStore('shares').delete(id);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function checkPendingAndroidShare() {
+  if (!currentUser) return;
+  const errorParams = new URLSearchParams(window.location.search);
+  if (errorParams.get('rh_share_error') === '1') {
+    errorParams.delete('rh_share_error');
+    const cleanErrorUrl = window.location.pathname + (errorParams.toString() ? '?' + errorParams.toString() : '') + window.location.hash;
+    history.replaceState({}, '', cleanErrorUrl);
+    alert('O RefHub não conseguiu receber esse compartilhamento. Tente novamente ou use “Em Lote” para adicionar o link ou a imagem manualmente.');
+    return;
+  }
+  const params = new URLSearchParams(window.location.search);
+  const shareId = params.get('rh_share');
+  if (!shareId) return;
+
+  try {
+    const payload = await getPendingAndroidShare(shareId);
+    if (!payload) {
+      params.delete('rh_share');
+      const cleanUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + window.location.hash;
+      history.replaceState({}, '', cleanUrl);
+      alert('O compartilhamento não foi encontrado. Tente compartilhar novamente.');
+      return;
+    }
+
+    const sharedUrls = [];
+    const candidates = [payload.url, payload.text].filter(Boolean);
+    candidates.forEach(value => {
+      const matches = String(value).match(/https?:\/\/[^\s<>"']+/gi) || [];
+      matches.forEach(match => {
+        const cleaned = match.replace(/[),.;\]}]+$/g, '');
+        try {
+          const normalized = new URL(cleaned).href;
+          if (!sharedUrls.includes(normalized)) sharedUrls.push(normalized);
+        } catch (_) {}
+      });
+    });
+
+    const urlsField = document.getElementById('batchUrls');
+    const currentUrls = urlsField.value.split('\n').map(value => value.trim()).filter(Boolean);
+    sharedUrls.forEach(url => {
+      if (!currentUrls.includes(url)) currentUrls.push(url);
+      if (payload.title) androidShareTitles.set(url, String(payload.title).trim());
+    });
+    urlsField.value = currentUrls.join('\n');
+
+    const sharedFiles = Array.isArray(payload.files) ? payload.files : [];
+    if (sharedFiles.length) {
+      const transfer = new DataTransfer();
+      Array.from(batchLocalFilesInput.files || []).forEach(file => transfer.items.add(file));
+      sharedFiles.forEach((entry, index) => {
+        if (!entry || !entry.blob) return;
+        const fileName = entry.name || `imagem-compartilhada-${index + 1}`;
+        const fileType = entry.type || entry.blob.type || 'image/jpeg';
+        const file = new File([entry.blob], fileName, { type: fileType, lastModified: entry.lastModified || Date.now() });
+        if (file.type.startsWith('image/')) transfer.items.add(file);
+      });
+      batchLocalFilesInput.files = transfer.files;
+      batchLocalFilesInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    await deletePendingAndroidShare(shareId);
+    params.delete('rh_share');
+    const cleanUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + window.location.hash;
+    history.replaceState({}, '', cleanUrl);
+
+    modalBatchRef.classList.replace('hidden', 'flex');
+    const itemCount = sharedUrls.length + Array.from(batchLocalFilesInput.files || []).length;
+    if (itemCount) {
+      alert(`${itemCount} item(ns) recebido(s). Confira a lista, escolha a pasta e as tags e toque em “Salvar Todos”.`);
+    } else {
+      alert('O aplicativo compartilhou apenas texto sem um link ou imagem reconhecível. Nenhum item foi importado.');
+    }
+  } catch (err) {
+    console.error('Erro ao processar compartilhamento Android:', err);
+    alert('Não foi possível abrir o compartilhamento. O conteúdo pendente foi mantido para tentar novamente.');
+  }
+}
+
 async function getLocalAsset(id) {
   const dbLocal = await getLocalAssetDB();
   return new Promise((resolve, reject) => {
@@ -1376,7 +1492,10 @@ auth.onAuthStateChanged(user => {
     userNameDisplay.innerText = name;
     userAvatar.innerText = name.charAt(0).toUpperCase();
     attachDatabaseListeners();
-    setTimeout(checkPendingExtensionCapture, 300);
+    setTimeout(() => {
+      checkPendingExtensionCapture();
+      checkPendingAndroidShare();
+    }, 400);
   } else {
     currentUser = null;
     savedIdeas = [];
@@ -1803,7 +1922,7 @@ document.getElementById('batchForm').onsubmit = async (e) => {
       operations.push({
         docRef,
         data: {
-          title: getDomainFromUrl(validUrl),
+          title: androidShareTitles.get(validUrl) || getDomainFromUrl(validUrl),
           url: validUrl,
           folderId: folderId,
           notes: '',
@@ -1850,6 +1969,10 @@ document.getElementById('batchForm').onsubmit = async (e) => {
     }
 
     const total = operations.length;
+    urls.forEach(url => {
+      const validUrl = url.startsWith('http') ? url : 'https://' + url;
+      androidShareTitles.delete(validUrl);
+    });
     e.target.reset();
     if (batchLocalFilesSummary) batchLocalFilesSummary.textContent = 'Você pode selecionar várias imagens de uma vez.';
     btnSave.disabled = false;
