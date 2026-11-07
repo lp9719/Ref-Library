@@ -1,25 +1,25 @@
-const CACHE_NAME = 'refhub-v2';
+const CACHE_NAME = 'refhub-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+  './manifest.json'
 ];
 
-// Caixa de entrada separada: não altera nem atualiza o banco das imagens locais existentes.
+// Caixa de entrada separada: não altera o banco das imagens locais existentes.
 const SHARE_DB_NAME = 'refhub-share-inbox';
 const SHARE_DB_VERSION = 1;
 
 function openShareDatabase() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(SHARE_DB_NAME, SHARE_DB_VERSION);
+
     request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains('shares')) {
         db.createObjectStore('shares', { keyPath: 'id' });
       }
     };
+
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
@@ -27,6 +27,7 @@ function openShareDatabase() {
 
 async function storeAndroidShare(request) {
   const formData = await request.formData();
+
   const files = formData.getAll('files')
     .filter(value => value instanceof File && value.size > 0)
     .map(file => ({
@@ -50,14 +51,18 @@ async function storeAndroidShare(request) {
   };
 
   const db = await openShareDatabase();
-  await new Promise((resolve, reject) => {
-    const tx = db.transaction('shares', 'readwrite');
-    tx.objectStore('shares').put(payload);
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error || new Error('Falha ao guardar compartilhamento'));
-  });
-  db.close();
+
+  try {
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction('shares', 'readwrite');
+      tx.objectStore('shares').put(payload);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error('Falha ao guardar compartilhamento'));
+    });
+  } finally {
+    db.close();
+  }
 
   const destination = new URL('./index.html', self.registration.scope);
   destination.searchParams.set('rh_share', id);
@@ -65,33 +70,55 @@ async function storeAndroidShare(request) {
 }
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
-  );
-  self.skipWaiting();
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+
+    // O cache é apenas um recurso auxiliar. Falha ao baixar um arquivo
+    // não pode impedir a instalação/ativação do service worker.
+    await Promise.all(ASSETS_TO_CACHE.map(asset =>
+      cache.add(asset).catch(error => {
+        console.warn('RefHub: não foi possível armazenar no cache:', asset, error);
+      })
+    ));
+
+    await self.skipWaiting();
+  })());
 });
 
-// Remove somente caches pertencentes ao RefHub, sem tocar em caches de outros apps no mesmo domínio.
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => Promise.all(
+  event.waitUntil((async () => {
+    const cacheNames = await caches.keys();
+
+    await Promise.all(
       cacheNames
         .filter(name => name.startsWith('refhub-') && name !== CACHE_NAME)
         .map(name => caches.delete(name))
-    ))
-  );
-  self.clients.claim();
+    );
+
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', event => {
   const requestUrl = new URL(event.request.url);
-  const shareTargetUrl = new URL('./share-target', self.registration.scope);
+  const scopeUrl = new URL(self.registration.scope);
 
-  if (event.request.method === 'POST' && requestUrl.pathname === shareTargetUrl.pathname) {
+  const targetPath = new URL('./share-target', scopeUrl).pathname.replace(/\/+$/, '');
+  const requestPath = requestUrl.pathname.replace(/\/+$/, '');
+
+  // Recebe somente o POST destinado ao endpoint de compartilhamento do RefHub.
+  if (
+    event.request.method === 'POST' &&
+    requestUrl.origin === scopeUrl.origin &&
+    requestPath === targetPath
+  ) {
     event.respondWith(
       storeAndroidShare(event.request).catch(error => {
         console.error('RefHub: erro ao receber compartilhamento Android:', error);
-        return Response.redirect(new URL('./index.html?rh_share_error=1', self.registration.scope).href, 303);
+
+        const fallback = new URL('./index.html', self.registration.scope);
+        fallback.searchParams.set('rh_share_error', '1');
+        return Response.redirect(fallback.href, 303);
       })
     );
     return;
